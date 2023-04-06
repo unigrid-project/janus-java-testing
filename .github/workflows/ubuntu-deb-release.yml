@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 
 env:
+  GITHUB_TOKEN: ${{ secrets.PATT }}
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GROUP_ID: org.unigrid*
   ARTIFACT_ID_DESKTOP: desktop
@@ -17,6 +18,8 @@ env:
   TAG_PATTERN_BOOTSTRAP: v*_bootstrap
   EXCLUDE_CONFIG_FILES_ARG: #--exclude 'config*test.xml'
   INCLUDE_CONFIG_FILES_MATCHER: 'config/target/config*test.xml'
+  USERNAME: 'timnhanta'
+  EMAIL: 'tim@unigrid.org'
 
 jobs:
   create-release:
@@ -83,11 +86,11 @@ jobs:
 
       - name: Push pom files to master
         run: |
-          git config --global user.name 'dekm'
-          git config --global user.email 'gevan73@gmail.com'
+          git config --global user.name ${{ env.USERNAME }}
+          git config --global user.email ${{ env.EMAIL }}
           git add "./*pom.xml"
           git commit -m "Github Actions: Replace maven version in pom.xml with tag version"
-          git push https://${{ secrets.PAT }}@github.com/unigrid-project/janus-java.git HEAD:master 
+          git push https://${{ secrets.PATT }}@github.com/unigrid-project/janus-java.git HEAD:master 
 
       - name: Change tag pointing to master latest commit
         run: |
@@ -276,7 +279,7 @@ jobs:
 
       - run: ls artifacts
 
-      - run: git clone https://${{ secrets.PAT }}@github.com/${{ env.UPDATEREPO }} update-repository
+      - run: git clone https://${{ secrets.PATT }}@github.com/${{ env.UPDATEREPO }} update-repository
 
       - run: cp -rf artifacts/* update-repository
 

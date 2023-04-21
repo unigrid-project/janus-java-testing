@@ -14,6 +14,14 @@ on:
         options:
         - fx
         - bootstrap
+      skip_test:
+        type: boolean
+        description: Skip Test Suite
+        default: false
+      skip_checkstyle:
+        type: boolean
+        description: Skip check checkstyle
+        default: false
 
 env:
   GITHUB_TOKEN: ${{ secrets.ACTION_PAT }}
@@ -43,6 +51,10 @@ jobs:
         run: echo ${{ inputs.target_module }}
       - name: print full tag
         run: echo ${{ inputs.release_version }}_${{ inputs.target_module }}
+      - name: print skip_test
+        run: echo ${{ inputs.skip_test }}
+      - name: print skip_checkstyle
+        run: echo ${{ inputs.skip_checkstyle }}
 
       - uses: actions/checkout@v3
         with:
@@ -67,8 +79,19 @@ jobs:
 
       - name: Run Test
         run: |
-          xvfb-run -a mvn -f config/pom.xml clean install
-          xvfb-run -a mvn test
+          if [[ ${{ inputs.skip_checkstyle }} == false ]];
+          then
+            echo 'skip_checkstyle=false'
+            xvfb-run -a mvn checkstyle:check
+            xvfb-run -a mvn -f config/pom.xml checkstyle:check
+          fi
+          if [[ ${{ inputs.skip_test }} == false ]];
+          then
+            echo 'skip_test=false'
+            xvfb-run -a mvn test -Dcheckstyle.skip
+            xvfb-run -a mvn -f config/pom.xml test -Dcheckstyle.skip
+          fi
+          xvfb-run -a mvn -f config/pom.xml clean install -Dcheckstyle.skip -Dmaven.test.skip=true
 
       - name: Set env before removal of snapshot
         run: |
@@ -234,9 +257,9 @@ jobs:
 
       - name: Build Installer
         run: |
-          mvn -f config/pom.xml clean install `-Dmaven.test.skip=true -B -e
-          mvn clean install `-Dmaven.test.skip=true -B -e
-          mvn -f desktop/pom.xml jpackage:jpackage@installer `-Djpackage.version=${{ needs.create-release.outputs.version }} `-Dmaven.test.skip=true -B -e
+          mvn -f config/pom.xml clean install `-Dmaven.test.skip=true `-Dcheckstyle.skip -B -e
+          mvn clean install `-Dmaven.test.skip=true `-Dcheckstyle.skip -B -e
+          mvn -f desktop/pom.xml jpackage:jpackage@installer `-Djpackage.version=${{ needs.create-release.outputs.version }} `-Dmaven.test.skip=true  `-Dcheckstyle.skip -B -e
           cp desktop/target/dist/Unigrid-${{ needs.create-release.outputs.version }}*.msi .
           mv Unigrid-${{ needs.create-release.outputs.version }}*.msi Unigrid-${{ needs.create-release.outputs.version }}.msi
           gh release upload ${{ inputs.release_version }}_${{ inputs.target_module }} Unigrid-${{ needs.create-release.outputs.version }}.msi
@@ -320,7 +343,7 @@ jobs:
         run: |
           git clone https://${{ secrets.ACTION_PAT }}@github.com/${{ env.UPDATE_REPO }} unigrid-update
           git -C unigrid-update checkout main
-          cp -rf artifacts/config*.xml artifacts/fx*.jar unigrid-update/
+          cp -rf artifacts/* unigrid-update/
           ls unigrid-update
   
       - name: Set env

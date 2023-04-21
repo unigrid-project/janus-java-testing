@@ -8,8 +8,6 @@ on:
         required: true
       target_module:
         description: 'Target module'
-        required: true
-        default: 'fx'
         type: choice
         options:
         - fx

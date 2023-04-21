@@ -1,0 +1,76 @@
+name: Test
+
+on:
+  repository_dispatch:
+    types:
+    - dispatch-test
+  workflow_dispatch:
+    inputs:
+      skip_fx:
+        type: boolean
+        description: Skip fx
+        default: false
+      skip_bootstrap:
+        type: boolean
+        description: Skip bootstrap
+        default: false
+      skip_desktop:
+        type: boolean
+        description: Skip desktop
+        default: false
+      skip_config:
+        type: boolean
+        description: Skip config
+        default: false
+      skip_checkstyle:
+        type: boolean
+        description: Skip checkstyle
+        default: false
+
+jobs:
+  test-module:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: 'echo "field: ${{ github.event.client_payload.dispatch }}"'
+      - run: 'echo "field: ${{ github.event.client_payload.target_module }}"'
+      - run: 'echo "payload: ${{ toJson(github.event.client_payload) }}"'
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.6
+
+      - name: Version checks
+        run: |
+          java --version
+          mvn -v
+
+      - name: Test fx
+        if: ${{ inputs.skip_fx == false }}
+        run: xvfb-run -a mvn -f fx/pom.xml test -Dcheckstyle.skip
+
+      - name: Test bootstrap
+        if: ${{ inputs.skip_bootstrap == false }}
+        run: xvfb-run -a mvn -f bootstrap/pom.xml test -Dcheckstyle.skip
+
+      - name: Test desktop
+        if: ${{ inputs.skip_desktop == false }}
+        run: xvfb-run -a mvn -f desktop/pom.xml test -Dcheckstyle.skip
+
+      - name: Test config
+        if: ${{ inputs.skip_config == false }}
+        run: xvfb-run -a mvn -f config/pom.xml test -Dcheckstyle.skip
+
+      - name: Test checkstyle
+        if: ${{ inputs.skip_checkstyle == false }}
+        run: xvfb-run -a mvn checkstyle:check

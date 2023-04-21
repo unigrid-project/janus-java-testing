@@ -1,0 +1,78 @@
+name: Create release & tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_module:
+        description: 'Target module'
+        type: choice
+        options:
+        - fx
+        - bootstrap
+      tag_name:
+        description: 'Module tag'
+        required: true
+      parent_tag:
+        description: 'Parent tag'
+        required: false
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: print inputs
+        run: echo 'target_module=${{ inputs.target_module }}, tag_name=${{ inputs.tag_name }}, parent_tag=${{ inputs.parent_tag }}'
+
+      - name: Set up JDK 17
+        if: ${{ inputs.parent_tag == '' }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Maven
+        if: ${{ inputs.parent_tag == '' }}
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.6
+
+      - name: Maven version
+        if: ${{ inputs.parent_tag == '' }}
+        run: mvn -v
+
+      - name: Set parent tag
+        run: |
+          if [[ -z "${{ inputs.parent_tag }}" ]]; then
+            echo "PARENT_TAG=v$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          else
+            echo "PARENT_TAG=$(echo ${{ inputs.parent_tag }})" >> $GITHUB_ENV
+          fi
+
+      - uses: rickstaa/action-create-tag@v1
+        name: Create tag
+        id: "tag_create_tag"
+        with:
+          tag: ${{ inputs.tag_name }}_${{ inputs.target_module }}
+          tag_exists_error: false
+          message: "Tag created by github action"
+
+      - uses: rickstaa/action-create-tag@v1
+        name: Create parent tag
+        id: "tag_create_parent_tag"
+        with:
+          tag: ${{ env.PARENT_TAG }}
+          tag_exists_error: false
+          message: "Tag created by github action"
+
+      - uses: ncipollo/release-action@v1
+        name: Release tag
+        with:
+          name: ${{ inputs.tag_name }}_${{ inputs.target_module }}
+          tag: ${{ inputs.tag_name }}_${{ inputs.target_module }}
+          generateReleaseNotes: true
+          draft: true

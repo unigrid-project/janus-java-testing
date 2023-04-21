@@ -1,0 +1,47 @@
+name: Janus - Dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_module:
+        description: 'Target module'
+        type: choice
+        options:
+        - fx
+        - bootstrap
+      repo:
+        description: 'Unigrid repository'
+        default: 'janus-java-testing'
+        required: true
+      tag_name:
+        description: 'Module tag'
+        required: true
+      parent_tag:
+        description: 'Parent tag'
+        required: false
+      skip_test:
+        type: boolean
+        description: Skip test
+        default: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.Action_PAT }}
+          repository: unigrid-project/janus-java-testing
+          event-type: dispatch-test
+          client-payload: '{"dispatch": true,"target_module": "${{ inputs.target_module }}","tag_name": "${{ inputs.tag_name }}","parent_tag": "${{ inputs.parent_tag }}","skip_test": "${{ inputs.skip_test }}"}'
+
+      - name: Wait for tests to succeed
+        uses: lewagon/wait-on-check-action@v1.2.0
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Test'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10

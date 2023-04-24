@@ -1,18 +1,24 @@
-name: Janus - Dispatch
+name: Dispatcher
 
 on:
   workflow_dispatch:
     inputs:
+      repository:
+        type: string
+        description: 'Repository'
+        default: 'unigrid-project/janus-java-testing'
+        required: true
+      wait_interval:
+        type: number
+        description: Wait interval
+        default: 10
+        required: true
       target_module:
         description: 'Target module'
         type: choice
         options:
         - fx
         - bootstrap
-      repo:
-        description: 'Unigrid repository'
-        default: 'janus-java-testing'
-        required: true
       tag_name:
         description: 'Module tag'
         required: true
@@ -25,23 +31,48 @@ on:
         default: false
 
 jobs:
-  dispatch:
+  dispatcher:
     runs-on: ubuntu-latest
     permissions: write-all
+    strategy:
+      max-parallel: 1
+      matrix:
+        release: ['test', 'remove-snapshot', 'create-release', 'bump']
+        include:
+          - release: test
+            name: Test
+            event: dispatch-test
+            payload: '{"skip_test": "${{ inputs.skip_test }}"}'
+            check: 'Maven tests'
+          - release: remove-snapshot
+            name: Remove snapshot
+            event: dispatch-snapshot
+            payload: '{"dispatch": true,"action": "Remove"}'
+            check: 'Snapshot action'
+          - release: create-release
+            name: Create release
+            event: dispatch-release
+            payload: '{"target_module": "${{ inputs.target_module }}","tag_name": "${{ inputs.tag_name }}","parent_tag": "${{ inputs.parent_tag }}"}'
+            check: 'Create release'
+          - release: bump
+            name: Bump
+            event: dispatch-bump
+            check: 'Bump'
 
     steps:
       - uses: actions/checkout@v3
       - uses: peter-evans/repository-dispatch@v2
+        name: Dispatch workflow - ${{ matrix.name }}
         with:
           token: ${{ secrets.Action_PAT }}
-          repository: unigrid-project/janus-java-testing
-          event-type: dispatch-test
-          client-payload: '{"dispatch": true,"target_module": "${{ inputs.target_module }}","tag_name": "${{ inputs.tag_name }}","parent_tag": "${{ inputs.parent_tag }}","skip_test": "${{ inputs.skip_test }}"}'
+          repository: ${{ inputs.repository }}
+          event-type: ${{ matrix.event }}
+          client-payload: ${{ matrix.payload }}
 
-      - name: Wait for tests to succeed
-        uses: lewagon/wait-on-check-action@v1.2.0
+      - name: Dispatch wait - ${{ matrix.name }}
+        uses: lewagon/wait-on-check-action@v1.3.1
         with:
           ref: ${{ github.ref }}
-          check-name: 'Test'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
+          check-name: ${{ matrix.check }}
+          repo-token: ${{ secrets.Action_PAT }}
+          wait-interval: ${{ inputs.wait_interval }}

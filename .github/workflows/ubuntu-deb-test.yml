@@ -26,16 +26,19 @@ on:
         type: boolean
         description: Skip checkstyle
         default: false
+  # Triggers the workflow At minute 0 past every 6th hour
+  schedule:
+    - cron: "0 */6 * * *"
 
 jobs:
   test-module:
+    name: Maven tests
     runs-on: ubuntu-latest
     permissions: write-all
 
     steps:
       - uses: actions/checkout@v3
-      - run: 'echo "field: ${{ github.event.client_payload.dispatch }}"'
-      - run: 'echo "field: ${{ github.event.client_payload.target_module }}"'
+      - run: 'echo "field: ${{ github.event.client_payload.skip_test }}"'
       - run: 'echo "payload: ${{ toJson(github.event.client_payload) }}"'
 
       - name: Set up JDK 17
@@ -56,21 +59,21 @@ jobs:
           mvn -v
 
       - name: Test fx
-        if: ${{ inputs.skip_fx == false }}
+        if: inputs.skip_fx == false && github.event.client_payload.skip_test == false
         run: xvfb-run -a mvn -f fx/pom.xml test -Dcheckstyle.skip
 
       - name: Test bootstrap
-        if: ${{ inputs.skip_bootstrap == false }}
+        if: inputs.skip_bootstrap == false && github.event.client_payload.skip_test == false
         run: xvfb-run -a mvn -f bootstrap/pom.xml test -Dcheckstyle.skip
 
       - name: Test desktop
-        if: ${{ inputs.skip_desktop == false }}
+        if: inputs.skip_desktop == false && github.event.client_payload.skip_test == false
         run: xvfb-run -a mvn -f desktop/pom.xml test -Dcheckstyle.skip
 
       - name: Test config
-        if: ${{ inputs.skip_config == false }}
+        if: inputs.skip_config == false && github.event.client_payload.skip_test == false
         run: xvfb-run -a mvn -f config/pom.xml test -Dcheckstyle.skip
 
       - name: Test checkstyle
-        if: ${{ inputs.skip_checkstyle == false }}
+        if: inputs.skip_checkstyle == false && github.event.client_payload.skip_test == false
         run: xvfb-run -a mvn checkstyle:check

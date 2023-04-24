@@ -1,6 +1,9 @@
 name: Create release & tag
 
 on:
+  repository_dispatch:
+    types:
+    - dispatch-release
   workflow_dispatch:
     inputs:
       target_module:
@@ -18,6 +21,7 @@ on:
 
 jobs:
   create-release:
+    name: Create release
     runs-on: ubuntu-latest
     permissions: write-all
 

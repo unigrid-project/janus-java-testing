@@ -1,0 +1,104 @@
+name: Upload to release tag
+
+on:
+  repository_dispatch:
+    types:
+    - dispatch-upload
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name (vX.Y.Z)'
+        required: true
+      skip_ubuntu:
+        type: boolean
+        description: Skip ubuntu
+        default: false
+      skip_windows:
+        type: boolean
+        description: Skip windows
+        default: false
+      skip_macos:
+        type: boolean
+        description: Skip macos
+        default: false
+
+env:
+  GH_TOKEN: ${{ secrets.ACTION_PAT }}
+
+jobs:
+  upload:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        skip: false
+        include:
+          - os: ubuntu-latest
+            skip: ${{ inputs.skip_ubuntu }}${{ github.event.client_payload.skip }}
+          - os: windows-latest
+            skip: ${{ inputs.skip_windows }}${{ github.event.client_payload.skip }}
+          - os: macos-latest
+            skip: ${{ inputs.skip_macos }}${{ github.event.client_payload.skip }}
+    name: Upload to release
+    runs-on: ${{ matrix.os }}
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.6
+
+      - name: Version checks
+        run: |
+          java --version
+          mvn -v
+
+      - name: Build Installer
+        if: ${{ matrix.skip }}${{ github.event.client_payload.skip }} != true
+        shell: bash
+        run: |
+          export version=$(echo ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} | cut --complement -c 1)
+          if [[ "${{ inputs.target_os }}${{ github.event.client_payload.target_os }}" == 'ubuntu' ]]; then
+            export filename_matcher="unigrid_$version*amd64.deb"
+            export filename="unigrid_$version_amd64.deb"
+            additional_cmd="sudo apt-get -y install alien"
+            additional_cmd="$additional_cmd && alien -r $filename"
+            additional_cmd="$additional_cmd && mv unigrid-$version*x86_64.rpm unigrid-$version-x86_64.rpm"
+            additional_cmd="$additional_cmd && gh release upload ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} unigrid-$version-x86_64.rpm"
+          elif [[ "${{ inputs.target_os }}${{ github.event.client_payload.target_os }}" == 'windows' ]]; then
+            export filename_matcher="Unigrid-$version*.msi"
+            export filename="Unigrid-$version.msi"
+          elif [[ "${{ inputs.target_os }}${{ github.event.client_payload.target_os }}" == 'macos' ]]; then
+            export filename_matcher="Unigrid-$version*.dmg"
+            export filename="Unigrid-$version.dmg"
+          fi
+
+          mvn -f config/pom.xml install -Dmaven.test.skip=true -Dcheckstyle.skip
+          mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
+          mvn -f desktop/pom.xml jpackage:jpackage@installer -Djpackage.version=$version -Dmaven.test.skip=true  -Dcheckstyle.skip
+          cp desktop/target/dist/$filename_matcher .
+          mv $filename_matcher $filename
+
+          if [[ "${{ inputs.target_os }}${{ github.event.client_payload.target_os }}" == 'macos' ]]; then
+            echo ${{ secrets.MACOS_CERTIFICATE }} | base64 -d > certificate.p12
+            security create-keychain -p ${{ secrets.KEYCHAIN_PWD }} build.keychain
+            security default-keychain -s build.keychain
+            security unlock-keychain -p ${{ secrets.KEYCHAIN_PWD }} build.keychain
+            security import certificate.p12 -k build.keychain -P ${{ secrets.MACOS_CERTIFICATE_PWD }} -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k ${{ secrets.KEYCHAIN_PWD }} build.keychain
+            /usr/bin/codesign --force -s "Developer ID Application: UGD Software AB (XH4NHZYJ98)" ./$filename -v
+            codesign -dv --verbose=4 $filename && echo SIGNED!
+            codesign -vv -d $filename
+          fi
+
+          gh release upload ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} $filename
+
+          eval $additional_cmd

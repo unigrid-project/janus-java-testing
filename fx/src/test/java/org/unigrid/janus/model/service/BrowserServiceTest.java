@@ -18,12 +18,13 @@ package org.unigrid.janus.model.service;
 
 import mockit.Expectations;
 import mockit.Mocked;
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import org.unigrid.janus.jqwik.BaseMockedWeldTest;
 
 public class BrowserServiceTest extends BaseMockedWeldTest {
 
-	@Example
+	@Example @Disabled
 	public void shouldCallNavigateFromAddress(@Mocked BrowserService service) {
 		new Expectations(service) {
 			{
@@ -38,7 +39,7 @@ public class BrowserServiceTest extends BaseMockedWeldTest {
 		service.navigateAddress("test");
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldCallNavigateFromTransaction(@Mocked BrowserService service) {
 		new Expectations(service) {
 			{

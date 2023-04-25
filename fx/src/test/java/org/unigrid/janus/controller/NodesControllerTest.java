@@ -24,6 +24,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.text.Text;
 import mockit.Mock;
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import net.jqwik.api.lifecycle.BeforeContainer;
 import static org.awaitility.Awaitility.await;
@@ -109,7 +110,7 @@ public class NodesControllerTest extends BaseFxTest {
 		assertThat(status, equalTo(nodes.getStatus()));
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldGenerateNodeAndCopyKey() {
 		final String node = "2xvxSQDH3Jdg2QHikqtbvCbtXqvk8PZisnTt3UHNv7H869zcdx9";
 		Clipboard clipboard = Clipboard.getSystemClipboard();

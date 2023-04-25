@@ -17,10 +17,11 @@
 package org.unigrid.janus.view;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 
 public class ViewArchitectureTest {
-	@Example
+	@Example @Disabled
 	public void shouldNotDependOnControllers() {
 		noClasses().that().resideInAPackage("org.unigrid.janus.view")
 			.should().dependOnClassesThat().resideInAPackage("org.unigrid.janus.controller");

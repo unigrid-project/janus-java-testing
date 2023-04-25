@@ -20,10 +20,10 @@ on:
         - fx
         - bootstrap
       tag_name:
-        description: 'Module tag'
+        description: 'Tag name (vX.Y.Z)'
         required: true
       parent_tag:
-        description: 'Parent tag'
+        description: 'Parent tag (vX.Y.Z)'
         required: false
       skip_test:
         type: boolean
@@ -37,27 +37,33 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        release: ['test', 'remove-snapshot', 'create-release', 'bump']
+        release: ['test', 'remove-snapshot', 'create-release', 'bump', 'upload']
         include:
           - release: test
-            name: Test
+            name: Test suite
             event: dispatch-test
             payload: '{"skip_test": "${{ inputs.skip_test }}"}'
-            check: 'Maven tests'
+            check: 'Maven test'
           - release: remove-snapshot
-            name: Remove snapshot
+            name: Snapshot - Remove
             event: dispatch-snapshot
-            payload: '{"dispatch": true,"action": "Remove"}'
-            check: 'Snapshot action'
+            payload: '{}'
+            check: 'Remove snapshot'
           - release: create-release
-            name: Create release
+            name: Create release & tag
             event: dispatch-release
             payload: '{"target_module": "${{ inputs.target_module }}","tag_name": "${{ inputs.tag_name }}","parent_tag": "${{ inputs.parent_tag }}"}'
             check: 'Create release'
           - release: bump
-            name: Bump
+            name: Bump version
             event: dispatch-bump
+            payload: '{"target_module": "${{ inputs.target_module }}"}'
             check: 'Bump'
+          - release: upload
+            name: Upload to release tag
+            event: dispatch-upload
+            payload: '{"tag_name": "${{ inputs.tag_name }}"}'
+            check: 'Upload to release'
 
     steps:
       - uses: actions/checkout@v3

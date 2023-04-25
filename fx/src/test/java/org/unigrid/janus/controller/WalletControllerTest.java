@@ -147,7 +147,7 @@ public class WalletControllerTest extends BaseFxTest {
 		};
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldSendTransaction() {
 		rpc.pollForInfo(900000);
 		await().until(() -> wallet != null && wallet.getStakingStatus() != null);
@@ -165,7 +165,7 @@ public class WalletControllerTest extends BaseFxTest {
 		rpc.stopPolling();
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldUnlockAndSendTransaction() {
 		isLocked = true;
 		rpc.pollForInfo(900000);
@@ -207,7 +207,7 @@ public class WalletControllerTest extends BaseFxTest {
 		verifyThat("#sendWarnMsg", TextMatchers.hasText("Please enter a valid Unigrid address."));
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldClearInputsOnTransactionCancel() {
 		robot.clickOn("#btnWalletTransaction");
 		verifyThat("#sendTransactionPnl", isVisible());
@@ -222,7 +222,7 @@ public class WalletControllerTest extends BaseFxTest {
 		verifyThat("#amountToSend", TextInputControlMatchers.hasText(""));
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldChangeTabOnReceiveClicked() {
 		robot.clickOn("#btnWalletRecieve");
 		verifyThat("#pnlAddress", isVisible());

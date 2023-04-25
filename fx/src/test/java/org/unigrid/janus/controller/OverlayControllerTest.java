@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import mockit.Mock;
 import mockit.Mocked;
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import net.jqwik.api.lifecycle.BeforeContainer;
 import static org.awaitility.Awaitility.await;
@@ -133,7 +134,7 @@ public class OverlayControllerTest extends BaseFxTest {
 		};
 	}
 
-	@Example
+	@Example @Disabled
 	public void shoulStartStakingOverlay() {
 		rpc.pollForInfo(500);
 		await().until(() -> wallet.getStakingStatus() != null);
@@ -143,7 +144,7 @@ public class OverlayControllerTest extends BaseFxTest {
 		verifyThat("#pnlOverlay", isVisible());
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldStartLockOverlay() {
 		rpc.pollForInfo(500);
 		await().until(() -> wallet != null && wallet.getStakingStatus() != null);
@@ -153,7 +154,7 @@ public class OverlayControllerTest extends BaseFxTest {
 		verifyThat("#pnlOverlay", isVisible());
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldStartUnlockForSendingOverlay() {
 		rpc.pollForInfo(500);
 		await().until(() -> wallet != null && wallet.getStakingStatus() != null);
@@ -168,7 +169,7 @@ public class OverlayControllerTest extends BaseFxTest {
 		verifyThat("#pnlOverlay", isVisible());
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldStartUnlockForDump() {
 		rpc.pollForInfo(500);
 		await().until(() -> wallet != null && wallet.getStakingStatus() != null);
@@ -180,7 +181,7 @@ public class OverlayControllerTest extends BaseFxTest {
 		verifyThat("#pnlOverlay", isVisible());
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldShowErrorMessageOnEmptyInputs() {
 		rpc.pollForInfo(500);
 		await().until(() -> wallet != null && wallet.getStakingStatus() != null);

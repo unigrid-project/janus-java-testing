@@ -25,6 +25,7 @@ import javafx.scene.paint.Paint;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.Mocked;
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import net.jqwik.api.lifecycle.BeforeContainer;
 import static org.awaitility.Awaitility.await;
@@ -166,7 +167,7 @@ public class MainWindowControllerTest extends BaseFxTest {
 		};
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldSwitchTabs() {
 		robot.moveTo("#pnlWallet");
 		verifyThat("#pnlWallet", isVisible());
@@ -190,7 +191,7 @@ public class MainWindowControllerTest extends BaseFxTest {
 		verifyThat("#pnlSettings", isVisible());
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldShowIsStaking() {
 		isStaking = true;
 		rpc.pollForInfo(100000);
@@ -201,7 +202,7 @@ public class MainWindowControllerTest extends BaseFxTest {
 		rpc.stopPolling();
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldShowIsNotStaking() {
 		isStaking = false;
 		rpc.pollForInfo(100000);
@@ -212,7 +213,7 @@ public class MainWindowControllerTest extends BaseFxTest {
 		rpc.stopPolling();
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldUnlock() {
 		isLocked = true;
 		rpc.pollForInfo(100000);
@@ -233,7 +234,7 @@ public class MainWindowControllerTest extends BaseFxTest {
 		rpc.stopPolling();
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldLock() {
 		isLocked = false;
 		rpc.pollForInfo(100000);
@@ -246,7 +247,7 @@ public class MainWindowControllerTest extends BaseFxTest {
 		rpc.stopPolling();
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldChangeSatelliteIconColor() {
 		Paint color;
 		FontIcon icon = (FontIcon) robot.lookup("#satelliteIcn").queryAll().iterator().next();

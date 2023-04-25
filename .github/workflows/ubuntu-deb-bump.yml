@@ -33,7 +33,7 @@ env:
   skip_desktop: ${{ inputs.skip_desktop }}
 
 jobs:
-  bump-version:
+  bump:
     name: Bump
     runs-on: ubuntu-latest
     permissions: write-all
@@ -58,8 +58,18 @@ jobs:
           java --version
           mvn -v
 
+      - name: Set env variable for dispatch
+        if: github.event.client_payload.target_module != ''
+        run: |
+          if [[ ${{ github.event.client_payload.target_module }} == 'fx' ]]; then
+            echo "skip_fx=false" >> $GITHUB_ENV
+          else
+            echo "skip_bootstrap=false" >> $GITHUB_ENV
+            echo "skip_desktop=false" >> $GITHUB_ENV
+          fi
+
       - name: Requires config build
-        run: mvn -f config/pom.xml clean install -Dcheckstyle.skip -Dmaven.test.skip=true
+        run: xvfb-run -a mvn -f config/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
 
       - name: Bump version
         run: |

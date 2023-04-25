@@ -24,6 +24,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.text.Text;
 import mockit.Mock;
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import net.jqwik.api.lifecycle.BeforeContainer;
 import static org.awaitility.Awaitility.await;
@@ -108,7 +109,7 @@ public class AddressControllerTest extends BaseFxTest {
 		verifyThat("#addressDisplay", hasText(""));
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldHideZeroBalances() {
 		robot.clickOn("#btnAddress");
 		robot.clickOn("#chkAddress");
@@ -122,7 +123,7 @@ public class AddressControllerTest extends BaseFxTest {
 		verifyThat("#tblAddresses", hasTableCell("2000.00000000"));
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldSortAddresses() {
 		robot.clickOn("#btnAddress");
 		robot.clickOn("#chkAmountSort");

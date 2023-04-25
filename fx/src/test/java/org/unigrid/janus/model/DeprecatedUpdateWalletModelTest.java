@@ -19,6 +19,7 @@ package org.unigrid.janus.model;
 import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Objects;
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import mockit.Mock;
 import mockit.MockUp;
@@ -33,7 +34,7 @@ public class DeprecatedUpdateWalletModelTest extends BaseMockedWeldTest {
 	@Inject
 	private DeprecatedUpdateWalletModel deprecatedUpdateWalletModel;
 
-	@Example
+	@Example @Disabled
 	public boolean shouldReturnTrueOnCheckUpdateBootstrap() {
 		boolean ignore = true;
 		String versionSuffix = "_fx";

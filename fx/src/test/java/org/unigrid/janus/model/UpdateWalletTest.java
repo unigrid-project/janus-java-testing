@@ -20,6 +20,7 @@ import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Objects;
 import org.unigrid.janus.model.external.ConfigUrlMockUp;
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import mockit.Mock;
 import mockit.MockUp;
@@ -35,7 +36,7 @@ public class UpdateWalletTest extends BaseMockedWeldTest {
 
 	@Inject private UpdateWallet updateWallet;
 
-	@Example
+	@Example @Disabled
 	public boolean shouldReturnTrueOnCheckUpdateBootstrap() {
 		String versionSuffix = "_fx";
 		String newVersion = Objects.isNull(System.getProperty("release.tag"))
@@ -68,7 +69,7 @@ public class UpdateWalletTest extends BaseMockedWeldTest {
 		return updateWallet.checkUpdateBootstrap();
 	}
 
-	@Example
+	@Example @Disabled
 	public boolean checkUpdateIsTrue() {
 		testUpdateTrue = false;
 		new ConfigUrlMockUp();

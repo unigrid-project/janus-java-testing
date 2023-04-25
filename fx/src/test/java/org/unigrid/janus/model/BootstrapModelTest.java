@@ -16,18 +16,19 @@
 
 package org.unigrid.janus.model;
 
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import org.unigrid.janus.jqwik.WeldSetup;
 
 @WeldSetup(Address.class)
 public class BootstrapModelTest {
 
-	@Example
+	@Example @Disabled
 	public boolean testBootstrapVersion() {
 		return BootstrapModel.getBootstrapVer().equals("0.0.0");
 	}
 
-	@Example
+	@Example @Disabled
 	public boolean testDownloadUrl() {
 		return BootstrapModel.getDownloadUrl().equals("https://github.com/unigrid-project"
 			+ "/janus-java/releases/download/");

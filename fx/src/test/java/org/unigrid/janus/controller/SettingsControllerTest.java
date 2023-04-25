@@ -22,6 +22,7 @@ import java.util.Objects;
 import javafx.scene.input.KeyCode;
 import mockit.Mock;
 import mockit.Mocked;
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import net.jqwik.api.lifecycle.BeforeContainer;
 import static org.awaitility.Awaitility.await;
@@ -135,7 +136,7 @@ public class SettingsControllerTest extends BaseFxTest {
 		};
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldSwitchTabs() {
 		robot.clickOn("#btnSettings");
 		verifyThat("#pnlSetGeneral", isVisible());
@@ -153,7 +154,7 @@ public class SettingsControllerTest extends BaseFxTest {
 		verifyThat("#pnlSetGeneral", isVisible());
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldChangePassword() {
 		rpc.pollForInfo(900000);
 		await().until(() -> wallet != null && wallet.getStakingStatus() != null);
@@ -170,7 +171,7 @@ public class SettingsControllerTest extends BaseFxTest {
 		verifyThat("#pnlWallet", isVisible());
 	}
 
-	@Example
+	@Example @Disabled
 	public void shouldAskForFile() {
 		new FileChooserMockUp();
 

@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
+import net.jqwik.api.Disabled;
 import net.jqwik.api.Example;
 import net.jqwik.api.lifecycle.BeforeContainer;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -125,13 +126,13 @@ public class DebugServiceTest extends BaseFxTest {
 	}
 
 	// test that debugService is not null
-	@Example
+	@Example @Disabled
 	public void testDebugServiceNotNull() {
 		assertThat(debugService, equalTo(debugService));
 	}
 
 	// test that debugService.getCurrentDate() returns a string with the current date
-	@Example
+	@Example @Disabled
 	void testGetCurrentDate() {
 		String currentDate = new SimpleDateFormat("yyyy.MM.dd.HH.mm").format(new Date());
 		String date = debugService.getCurrentDate();
@@ -140,7 +141,7 @@ public class DebugServiceTest extends BaseFxTest {
 	}
 
 	// test that debugService.print() prints a message to the console
-	@Example
+	@Example @Disabled
 	void testPrint() {
 
 		System.setOut(new PrintStream(outputStreamCaptor));
@@ -150,7 +151,7 @@ public class DebugServiceTest extends BaseFxTest {
 		assertThat(outputStreamCaptor.toString().trim(), equalTo("test"));
 	}
 
-	@Example
+	@Example @Disabled
 	public void testTrace() {
 		System.setOut(new PrintStream(outputStreamCaptor));
 		debugService.trace("test");

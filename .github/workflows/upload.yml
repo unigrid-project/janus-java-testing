@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        skip: false
+        skip: [false]
         include:
           - os: ubuntu-latest
             skip: ${{ inputs.skip_ubuntu }}${{ github.event.client_payload.skip }}
@@ -62,21 +62,21 @@ jobs:
           mvn -v
 
       - name: Build Installer
-        if: ${{ matrix.skip }}${{ github.event.client_payload.skip }} != true
+        if: ${{ matrix.skip == false || (github.event.client_payload.skip == false && github.event.client_payload.target_module == 'bootstrap') }} 
         shell: bash
         run: |
-          export version=$(echo ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} | cut --complement -c 1)
-          if [[ "${{ inputs.target_os }}${{ github.event.client_payload.target_os }}" == 'ubuntu' ]]; then
+          export version=$(echo ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} | cut --complement -c 1 | cut -d '_' -f1)
+          if [[ "${{ runner.os }}" == 'Linux' ]]; then
             export filename_matcher="unigrid_$version*amd64.deb"
             export filename="unigrid_$version_amd64.deb"
             additional_cmd="sudo apt-get -y install alien"
             additional_cmd="$additional_cmd && alien -r $filename"
             additional_cmd="$additional_cmd && mv unigrid-$version*x86_64.rpm unigrid-$version-x86_64.rpm"
             additional_cmd="$additional_cmd && gh release upload ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} unigrid-$version-x86_64.rpm"
-          elif [[ "${{ inputs.target_os }}${{ github.event.client_payload.target_os }}" == 'windows' ]]; then
+          elif [[ "${{ runner.os }}" == 'Windows' ]]; then
             export filename_matcher="Unigrid-$version*.msi"
             export filename="Unigrid-$version.msi"
-          elif [[ "${{ inputs.target_os }}${{ github.event.client_payload.target_os }}" == 'macos' ]]; then
+          elif [[ "${{ runner.os }}" == 'macOS' ]]; then
             export filename_matcher="Unigrid-$version*.dmg"
             export filename="Unigrid-$version.dmg"
           fi
@@ -87,7 +87,7 @@ jobs:
           cp desktop/target/dist/$filename_matcher .
           mv $filename_matcher $filename
 
-          if [[ "${{ inputs.target_os }}${{ github.event.client_payload.target_os }}" == 'macos' ]]; then
+          if [[ "${{ runner.os }}" == 'macOS' ]]; then
             echo ${{ secrets.MACOS_CERTIFICATE }} | base64 -d > certificate.p12
             security create-keychain -p ${{ secrets.KEYCHAIN_PWD }} build.keychain
             security default-keychain -s build.keychain

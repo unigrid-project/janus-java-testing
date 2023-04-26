@@ -37,33 +37,33 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        release: ['test', 'remove-snapshot', 'create-release', 'bump', 'upload']
+        release: ['test', 'dispatch-set-version', 'create-release', 'upload', 'bump']
         include:
           - release: test
             name: Test suite
             event: dispatch-test
             payload: '{"skip_test": "${{ inputs.skip_test }}"}'
             check: 'Maven test'
-          - release: remove-snapshot
-            name: Snapshot - Remove
-            event: dispatch-snapshot
-            payload: '{}'
-            check: 'Remove snapshot'
+          - release: dispatch-set-version
+            name: Set version & Remove snapshot
+            event: dispatch-set-version
+            payload: '{"target_module": "${{ inputs.target_module }}","tag_name": "${{ inputs.tag_name }}","parent_tag": "${{ inputs.parent_tag }}"}'
+            check: 'Set version'
           - release: create-release
             name: Create release & tag
             event: dispatch-release
             payload: '{"target_module": "${{ inputs.target_module }}","tag_name": "${{ inputs.tag_name }}","parent_tag": "${{ inputs.parent_tag }}"}'
             check: 'Create release'
-          - release: bump
-            name: Bump version
-            event: dispatch-bump
-            payload: '{"target_module": "${{ inputs.target_module }}"}'
-            check: 'Bump'
           - release: upload
             name: Upload to release tag
             event: dispatch-upload
-            payload: '{"tag_name": "${{ inputs.tag_name }}"}'
+            payload: '{"tag_name": "${{ inputs.tag_name }}_${{ inputs.target_module }}"}'
             check: 'Upload to release'
+          - release: bump
+            name: Bump version
+            event: dispatch-bump
+            payload: '{"target_module": "${{ inputs.target_module }}","skip": false,}'
+            check: 'Bump'
 
     steps:
       - uses: actions/checkout@v3

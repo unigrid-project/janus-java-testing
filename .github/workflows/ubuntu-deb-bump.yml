@@ -76,7 +76,7 @@ jobs:
           for module in fx desktop bootstrap; do
             export version_$module=$(mvn -f $(echo $module)/pom.xml -q -DforceStdout help:evaluate -Dexpression=project.version)
             mvn -f $module/pom.xml versions:set -DnewVersion=$(printenv version_$module)-SNAPSHOT -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
-            if [[ $(printenv skip_$module) == false ]]; then
+            if [[ $(printenv skip_$module) == 'false' ]]; then
               mvn -f $module/pom.xml versions:set -DnextSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
             fi
           done

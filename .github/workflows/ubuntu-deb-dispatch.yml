@@ -8,6 +8,11 @@ on:
         description: 'Repository'
         default: 'unigrid-project/janus-java-testing'
         required: true
+      branch:
+        type: string
+        description: 'Branch name'
+        default: 'master'
+        required: true
       wait_interval:
         type: number
         description: Wait interval
@@ -22,13 +27,20 @@ on:
       tag_name:
         description: 'Tag name (vX.Y.Z)'
         required: true
+        default: 'v1.0.30'
       parent_tag:
         description: 'Parent tag (vX.Y.Z)'
         required: false
+        default: 'v1.0.35'
       skip_test:
         type: boolean
         description: Skip test
         default: false
+
+env:
+  GH_TOKEN: ${{ secrets.ACTION_PAT }}
+  github_username: 'Github Actions'
+  github_email: 'actions@github.com'
 
 jobs:
   dispatcher:
@@ -57,16 +69,19 @@ jobs:
           - release: upload
             name: Upload to release tag
             event: dispatch-upload
-            payload: '{"tag_name": "${{ inputs.tag_name }}_${{ inputs.target_module }}"}'
+            payload: '{"tag_name": "${{ inputs.tag_name }}_${{ inputs.target_module }}","target_module": "${{ inputs.target_module }}","skip": "false"}'
             check: 'Upload to release'
           - release: bump
             name: Bump version
             event: dispatch-bump
-            payload: '{"target_module": "${{ inputs.target_module }}","skip": false,}'
+            payload: '{"target_module": "${{ inputs.target_module }}","skip": "false"}'
             check: 'Bump'
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}
+
       - uses: peter-evans/repository-dispatch@v2
         name: Dispatch workflow - ${{ matrix.name }}
         with:
@@ -76,9 +91,15 @@ jobs:
           client-payload: ${{ matrix.payload }}
 
       - name: Dispatch wait - ${{ matrix.name }}
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-          ref: ${{ github.ref }}
-          check-name: ${{ matrix.check }}
-          repo-token: ${{ secrets.Action_PAT }}
-          wait-interval: ${{ inputs.wait_interval }}
+        run: |
+          export gh_commands='! gh run list -R ${{ inputs.repository }} -b "${{ inputs.branch }}" -w "${{ matrix.name }}" -u "${{ github.actor }}" --json status | jq ".[].status" | grep -qE "in_progress|queued"'
+          while true; do
+              if eval $gh_commands; then
+                echo "Waiting for ${{ matrix.name }} to start..."
+                sleep ${{ inputs.wait_interval }}
+              else
+                break;
+              fi
+              echo "Waiting for ${{ matrix.name }} to finish..."
+              sleep ${{ inputs.wait_interval }}
+          done

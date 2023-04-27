@@ -61,7 +61,7 @@ jobs:
 
       - name: Requires builds
         run: |
-          if [[ ${{ github.event.client_payload.skip_test }} == false || -z "${{ inputs.skip_fx }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_fx }}${{ github.event.client_payload.skip_test }}" ]]; then
             xvfb-run -a mvn -f config/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
             xvfb-run -a mvn -f pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
             xvfb-run -a mvn -f bootstrap/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
@@ -69,30 +69,30 @@ jobs:
 
       - name: Test fx
         run: |
-          if [[ ${{ inputs.skip_fx }}${{ github.event.client_payload.skip_test }} == false || -z "${{ inputs.skip_fx }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ inputs.skip_fx }}${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_fx }}${{ github.event.client_payload.skip_test }}" ]]; then
             xvfb-run -a mvn -f fx/pom.xml test -Dcheckstyle.skip
           fi
 
       - name: Test bootstrap
         run: |
-          if [[ ${{ inputs.skip_bootstrap }}${{ github.event.client_payload.skip_test }} == false || -z "${{ inputs.skip_bootstrap }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ inputs.skip_bootstrap }}${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_bootstrap }}${{ github.event.client_payload.skip_test }}" ]]; then
             xvfb-run -a mvn -f bootstrap/pom.xml test -Dcheckstyle.skip
           fi
 
       - name: Test desktop
         run: |
-          if [[ ${{ inputs.skip_desktop }}${{ github.event.client_payload.skip_test }} == false || -z "${{ inputs.skip_desktop }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ inputs.skip_desktop }}${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_desktop }}${{ github.event.client_payload.skip_test }}" ]]; then
             xvfb-run -a mvn -f desktop/pom.xml test -Dcheckstyle.skip
           fi
 
       - name: Test config
         run: |
-          if [[ ${{ inputs.skip_config }}${{ github.event.client_payload.skip_test }} == false || -z "${{ inputs.skip_config }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ inputs.skip_config }}${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_config }}${{ github.event.client_payload.skip_test }}" ]]; then
             xvfb-run -a mvn -f config/pom.xml test -Dcheckstyle.skip
           fi
 
       - name: Test checkstyle
         run: |
-          if [[ ${{ inputs.skip_checkstyle }}${{ github.event.client_payload.skip_test }} == false || -z "${{ inputs.skip_checkstyle }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ inputs.skip_checkstyle }}${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_checkstyle }}${{ github.event.client_payload.skip_test }}" ]]; then
             xvfb-run -a mvn checkstyle:check
           fi

@@ -94,7 +94,7 @@ jobs:
         run: |
           export state="init"
           while [[ $state != "completed" ]]; do
-            export command=$(gh run list -R "${{ inputs.repository }}" -b "${{ inputs.branch }}" -w "${{ matrix.name }}" -u "${{ github.actor }}" --json status | jq '[.[].status] | unique' | jq '. - ["completed"]' | jq -e '.[0]')
+            export command=$(gh run list -R "${{ inputs.repository }}" -b "${{ inputs.branch }}" -w "${{ matrix.name }}" -u "${{ github.actor }}" --json status | jq '[.[].status] | unique' | jq '. - ["completed"]' | jq -e '.[0]' | tr -d '"')
             echo "$state"
             echo "$command"
             if [[ $state == "init" && $command == "in_progress" ]]; then

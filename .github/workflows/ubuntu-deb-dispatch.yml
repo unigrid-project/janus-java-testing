@@ -93,7 +93,7 @@ jobs:
       - name: Dispatch wait - ${{ matrix.name }}
         run: |
           export command='gh run list -R ${{ inputs.repository }} -b "${{ inputs.branch }}" -w "${{ matrix.name }}" -u "${{ github.actor }}" --json status | jq ".[].status"'
-          while ! eval $command | grep -qE "in_progress|queued"; do
+          while ! eval $command | grep -qE "in_progress"; do
             echo "Waiting for ${{ matrix.name }} to start..."
             sleep ${{ inputs.wait_interval }}
           done

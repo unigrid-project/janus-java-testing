@@ -94,7 +94,7 @@ jobs:
         run: |
           export state="init"
           while [[ $state != "completed" ]]; do
-            export command=$(gh run list -R unigrid-project/janus-java-testing -b "${{ inputs.branch }}" -w "${{ matrix.name }}" -u "${{ github.actor }}" --json status | jq ".[].status" | grep -qE "in_progress")
+            export command=$(gh run list -R unigrid-project/janus-java-testing -b "${{ inputs.branch }}" -w "${{ matrix.name }}" -u "${{ github.actor }}" --json status | jq ".[].status" | grep -qE "in_progress|queued")
             echo "$state"
             $command
             if [[ $state == "init" && ! -z $command ]]; then

@@ -16,7 +16,7 @@ on:
       wait_interval:
         type: number
         description: Wait interval
-        default: 10
+        default: 5
         required: true
       target_module:
         description: 'Target module'
@@ -83,27 +83,10 @@ jobs:
           ref: ${{ inputs.branch }}
 
       - uses: peter-evans/repository-dispatch@v2
+        if: success()
         name: Dispatch workflow - ${{ matrix.name }}
         with:
           token: ${{ secrets.Action_PAT }}
           repository: ${{ inputs.repository }}
           event-type: ${{ matrix.event }}
           client-payload: ${{ matrix.payload }}
-
-      - name: Dispatch wait - ${{ matrix.name }}
-        run: |
-          export state="init"
-          while [[ $state != "completed" ]]; do
-            export command=$(gh run list -R "${{ inputs.repository }}" -b "${{ inputs.branch }}" -w "${{ matrix.name }}" -u "${{ github.actor }}" --json status | jq '[.[].status] | unique' | jq '. - ["completed"]' | jq -e '.[0]' | tr -d '"')
-            echo "$state"
-            echo "$command"
-            if [[ $state == "init" && $command == "in_progress" ]]; then
-              echo in_progress
-              export state="in_progress"
-            elif [[ $state == "in_progress" && $command != "in_progress" ]]; then
-              echo completed
-              export state="completed"
-            fi
-            echo "Waiting for ${{ matrix.name }} to be completed..."
-            sleep ${{ inputs.wait_interval }}
-          done

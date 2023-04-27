@@ -94,12 +94,12 @@ jobs:
         run: |
           export gh_commands='! gh run list -R ${{ inputs.repository }} -b "${{ inputs.branch }}" -w "${{ matrix.name }}" -u "${{ github.actor }}" --json status | jq ".[].status" | grep -qE "in_progress|queued"'
           while true; do
-              if eval $gh_commands; then
-                echo "Waiting for ${{ matrix.name }} to start..."
-                sleep ${{ inputs.wait_interval }}
-              else
-                break;
-              fi
-              echo "Waiting for ${{ matrix.name }} to finish..."
+            if eval $gh_commands; then
+              break;
+            else
+              echo "Waiting for ${{ matrix.name }} to start..."
               sleep ${{ inputs.wait_interval }}
+            fi
+            echo "Waiting for ${{ matrix.name }} to finish..."
+            sleep ${{ inputs.wait_interval }}
           done

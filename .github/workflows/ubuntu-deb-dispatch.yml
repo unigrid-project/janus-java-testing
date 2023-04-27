@@ -95,6 +95,8 @@ jobs:
           export state="init"
           while [[ $state != "completed" ]]; do
             export command=$(gh run list -R unigrid-project/janus-java-testing -b "${{ inputs.branch }}" -w "${{ matrix.name }}" -u "${{ github.actor }}" --json status | jq ".[].status" | grep -qE "in_progress")
+            echo "$state"
+            $command
             if [[ $state == "init" && ! -z $command ]]; then
               echo in_progress
               export state="in_progress"
@@ -102,7 +104,6 @@ jobs:
               echo completed
               export state="completed"
             fi
-            echo "$state"
             echo "Waiting for ${{ matrix.name }} to be completed..."
             sleep ${{ inputs.wait_interval }}
           done

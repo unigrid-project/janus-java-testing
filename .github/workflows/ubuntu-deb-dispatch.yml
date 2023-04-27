@@ -94,10 +94,10 @@ jobs:
         run: |
           export state="init"
           export command=$(gh run list -R unigrid-project/janus-java-testing -b "master" -w "Test suite" -u "timnhanta" --json status | jq ".[].status" | grep -qE "in_progress")
-          while [ $state != "completed" ]; do
-            if [ $state == "init" && ! -z $command ]; then
+          while [[ $state != "completed" ]]; do
+            if [[ $state == "init" && ! -z $command ]]; then
               export state="in_progress"
-            elif [ $state == "in_progress" && -z $command ]; then
+            elif [[ $state == "in_progress" && -z $command ]]; then
               export state="completed"
             fi
             echo "Waiting for ${{ matrix.name }} to be completed..."

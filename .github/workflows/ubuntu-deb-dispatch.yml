@@ -92,14 +92,14 @@ jobs:
 
       - name: Dispatch wait - ${{ matrix.name }}
         run: |
-          export state=init
+          export state="init"
           export command='gh run list -R ${{ inputs.repository }} -b "${{ inputs.branch }}" -w "${{ matrix.name }}" -u "${{ github.actor }}" --json status | jq ".[].status"'
 
-          while [[ $state != 'completed' ]]; do
-            if [ $state == 'init' && eval $command | grep -qE "in_progress" ]; then
-              export state=in_progress
-            elif [ $state == 'in_progress' && -z eval $command | grep -qE "in_progress" ]; then
-              export state=completed
+          while [ $state != "completed" ]; do
+            if [ $state == "init" && eval $command | grep -qE "in_progress" ]; then
+              export state="in_progress"
+            elif [ $state == "in_progress" && -z eval $command | grep -qE "in_progress" ]; then
+              export state="completed"
             fi
             echo "Waiting for ${{ matrix.name }} to be completed..."
             sleep ${{ inputs.wait_interval }}

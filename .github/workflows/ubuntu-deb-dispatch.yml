@@ -88,8 +88,6 @@ jobs:
             workflow: 'ubuntu-deb-bump.yml'
 
     steps:
-      - name: echo distinct ID ${{ github.event.inputs.distinct_id }}
-        run: echo ${{ github.event.inputs.distinct_id
       - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.branch }}

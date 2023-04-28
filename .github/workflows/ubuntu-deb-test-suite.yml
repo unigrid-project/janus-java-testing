@@ -8,7 +8,7 @@ on:
     inputs:
       distinct_id:
         type: string
-        description: 'Repository'
+        description: 'distinct_id'
       skip_fx:
         type: boolean
         description: Skip fx
@@ -40,6 +40,8 @@ jobs:
     permissions: write-all
 
     steps:
+      - name: echo distinct ID ${{ github.event.inputs.distinct_id }}
+        run: echo ${{ github.event.inputs.distinct_id
       - uses: actions/checkout@v3
       - run: 'echo "input.skip_fx: ${{ inputs.skip_fx }}"'
       - run: 'echo "skip_test field: ${{ github.event.client_payload.skip_test }}"'

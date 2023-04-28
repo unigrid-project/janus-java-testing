@@ -31,7 +31,6 @@ jobs:
       max-parallel: 3
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        skip: [false]
         include:
           - os: ubuntu-latest
             skip: ${{ inputs.skip_ubuntu }}${{ github.event.client_payload.skip }}
@@ -41,8 +40,8 @@ jobs:
             skip: ${{ inputs.skip_macos }}${{ github.event.client_payload.skip }}
     name: Upload to release
     runs-on: ${{ matrix.os }}
-    if: ${{ matrix.skip == 'false' && (github.event.client_payload.target_module == '' || github.event.client_payload.target_module == 'bootstrap') }}
     permissions: write-all
+    if: ${{ matrix.skip == 'false' && (github.event.client_payload.target_module == '' || github.event.client_payload.target_module == 'bootstrap') }}
     steps:
       - uses: actions/checkout@v3
 

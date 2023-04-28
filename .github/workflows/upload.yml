@@ -93,6 +93,7 @@ jobs:
           mvn -f config/pom.xml install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn -f desktop/pom.xml jpackage:jpackage@installer -Djpackage.version=${version} -Dmaven.test.skip=true  -Dcheckstyle.skip
+          ls
           cp desktop/target/dist/$filename_matcher .
           mv $filename_matcher $filename
 

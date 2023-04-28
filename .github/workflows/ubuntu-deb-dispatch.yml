@@ -3,7 +3,6 @@ name: Dispatcher
 on:
   workflow_dispatch:
     inputs:
-      distinct_id:
       repository:
         type: string
         description: 'Repository'

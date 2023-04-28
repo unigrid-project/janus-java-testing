@@ -6,6 +6,9 @@ on:
     - dispatch-test
   workflow_dispatch:
     inputs:
+      distinct_id:
+        type: string
+        description: 'Repository'
       skip_fx:
         type: boolean
         description: Skip fx

@@ -30,6 +30,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
+        skip: [false]
         os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - os: ubuntu-latest

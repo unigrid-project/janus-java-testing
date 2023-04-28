@@ -43,7 +43,7 @@ jobs:
     permissions: write-all
     steps:
       - name: Cancel job
-        if: ${{ matrix.skip == 'false' && (github.event.client_payload.target_module == '' || github.event.client_payload.target_module == 'bootstrap') }}
+        if: ${{ matrix.skip == 'true' || (github.event.client_payload.target_module == 'fx') }}
         run: exit 1
 
       - uses: actions/checkout@v3

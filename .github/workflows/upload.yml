@@ -93,8 +93,9 @@ jobs:
           mvn -f config/pom.xml install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn -f desktop/pom.xml jpackage:jpackage@installer -Djpackage.version=${version} -Dmaven.test.skip=true  -Dcheckstyle.skip
-          ls
+          ls desktop/target/dist/
           cp desktop/target/dist/$filename_matcher .
+          ls .
           mv $filename_matcher $filename
 
           if [[ "${{ runner.os }}" == 'macOS' ]]; then

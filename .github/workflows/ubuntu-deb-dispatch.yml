@@ -54,39 +54,64 @@ jobs:
           - release: test
             name: Test suite
             event: dispatch-test
+            inputs: { "some_input": "value" }
             payload: '{"skip_test": "${{ inputs.skip_test }}"}'
             check: 'Maven test'
+            workflow: 'ubuntu-deb-test-suite.yml'
           - release: dispatch-set-version
             name: Set version & Remove snapshot
             event: dispatch-set-version
+            inputs: { "some_input": "value" }
             payload: '{"target_module": "${{ inputs.target_module }}","tag_name": "${{ inputs.tag_name }}","parent_tag": "${{ inputs.parent_tag }}"}'
             check: 'Set version'
+            workflow: 'ubuntu-deb-set-version.yml'
           - release: create-release
             name: Create release & tag
             event: dispatch-release
+            inputs: { "some_input": "value" }
             payload: '{"target_module": "${{ inputs.target_module }}","tag_name": "${{ inputs.tag_name }}","parent_tag": "${{ inputs.parent_tag }}"}'
             check: 'Create release'
+            workflow: 'ubuntu-deb-release-create.yml'
           - release: upload
             name: Upload to release tag
             event: dispatch-upload
+            inputs: { "some_input": "value" }
             payload: '{"tag_name": "${{ inputs.tag_name }}_${{ inputs.target_module }}","target_module": "${{ inputs.target_module }}","skip": "false"}'
             check: 'Upload to release'
+            workflow: 'upload.yml'
           - release: bump
             name: Bump version
             event: dispatch-bump
+            inputs: { "some_input": "value" }
             payload: '{"target_module": "${{ inputs.target_module }}","skip": "false"}'
             check: 'Bump'
+            workflow: 'ubuntu-deb-bump.yml'
 
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.branch }}
 
-      - uses: peter-evans/repository-dispatch@v2
-        if: success()
-        name: Dispatch workflow - ${{ matrix.name }}
+      - name: Dispatch an action and get the run ID
+        uses: codex-/return-dispatch@v1
+        id: return_dispatch
         with:
-          token: ${{ secrets.Action_PAT }}
-          repository: ${{ inputs.repository }}
-          event-type: ${{ matrix.event }}
-          client-payload: ${{ matrix.payload }}
+          token: ${{ secrets.ACTION_PAT }}
+          ref: ${{ inputs.branch }}
+          repo: janus-java-testing
+          owner: unigrid-project
+          workflow:  ${{ matrix.workflow }}
+          workflow_inputs: ${{ matrix.inputs }}
+          workflow_timeout_seconds: 360
+
+      - name: Use the output run ID
+        run: echo ${{steps.return_dispatch.outputs.run_id}}
+
+      - name: Await Run ID ${{ steps.return_dispatch.outputs.run_id }}
+        uses: Codex-/await-remote-run@v1.0.0
+        with:
+          token: ${{ secrets.ACTION_PAT }}
+          repo: janus-java-testing
+          owner: unigrid-project
+          run_id: ${{ steps.return_dispatch.outputs.run_id }}
+          run_timeout_seconds: 360 # Optional

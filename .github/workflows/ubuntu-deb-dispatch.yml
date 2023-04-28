@@ -54,7 +54,7 @@ jobs:
           - release: test
             name: Test suite
             event: dispatch-test
-            inputs: '{ "some_input": "value" }'
+            inputs: '{ "skip_fx": "false" }'
             payload: '{"skip_test": "${{ inputs.skip_test }}"}'
             check: 'Maven test'
             workflow: 'ubuntu-deb-test-suite.yml'

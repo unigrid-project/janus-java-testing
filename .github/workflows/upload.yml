@@ -42,7 +42,7 @@ jobs:
     name: Upload to release
     runs-on: ${{ matrix.os }}
     permissions: write-all
-    if: ${{ matrix.skip == 'false' && (github.event.client_payload.target_module == '' || github.event.client_payload.target_module == 'bootstrap') }}
+    if: ${{ matrix.skip == 'false' }} && (github.event.client_payload.target_module == '' || github.event.client_payload.target_module == 'bootstrap')
     steps:
       - uses: actions/checkout@v3
 

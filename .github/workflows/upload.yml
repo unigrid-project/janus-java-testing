@@ -42,10 +42,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions: write-all
     steps:
-      - name: Cancel job
-        if: ${{ matrix.skip == 'true' || (github.event.client_payload.target_module == 'fx') }}
-        run: exit 1
+      - name: print
+        run: echo upload
 
+  matrix-job:
+    name: Matrix job
+    needs: [upload]
+    runs-on: ${{ matrix.os }}
+    permissions: write-all
+    if: ${{ matrix.skip != 'true' || (github.event.client_payload.target_module != 'fx') }}
+    steps:
       - uses: actions/checkout@v3
 
       - name: Set up JDK 17

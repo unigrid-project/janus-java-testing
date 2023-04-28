@@ -43,10 +43,10 @@ jobs:
     permissions: write-all
     steps:
       - uses: actions/checkout@v3
-        if: ${{ matrix.skip != 'true' || (github.event.client_payload.target_module != 'fx') }}
+        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
 
       - name: Set up JDK 17
-        if: ${{ matrix.skip != 'true' || (github.event.client_payload.target_module != 'fx') }}
+        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
         uses: actions/setup-java@v3
         with:
           java-version: '17'
@@ -54,25 +54,24 @@ jobs:
           cache: maven
 
       - name: Set up Maven
-        if: ${{ matrix.skip != 'true' || (github.event.client_payload.target_module != 'fx') }}
+        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
         uses: stCarolas/setup-maven@v4.5
         with:
           maven-version: 3.8.6
 
       - name: Version checks
-        if: ${{ matrix.skip != 'true' || (github.event.client_payload.target_module != 'fx') }}
+        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
         run: |
           java --version
           mvn -v
 
       - name: print env
-        if: ${{ matrix.skip != 'true' || (github.event.client_payload.target_module != 'fx') }}
+        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
         run: |
           echo ${{ matrix.skip }}
-          echo ${{ github.event.client_payload.target_module }}
 
       - name: Build Installer
-        if: ${{ matrix.skip != 'true' || (github.event.client_payload.target_module != 'fx') }}
+        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
         shell: bash
         run: |
           export version=$(echo ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} | cut --complement -c 1 | cut -d '_' -f1)

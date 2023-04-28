@@ -40,9 +40,9 @@ jobs:
     permissions: write-all
 
     steps:
-      - name: echo distinct ID ${{ github.event.inputs.distinct_id }}
-        run: echo ${{ github.event.inputs.distinct_id
       - uses: actions/checkout@v3
+      - name: echo distinct ID ${{ inputs.distinct_id }}
+        run: echo ${{ inputs.distinct_id }}
       - run: 'echo "input.skip_fx: ${{ inputs.skip_fx }}"'
       - run: 'echo "skip_test field: ${{ github.event.client_payload.skip_test }}"'
       - run: 'echo "payload: ${{ toJson(github.event.client_payload) }}"'

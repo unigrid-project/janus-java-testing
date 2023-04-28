@@ -64,6 +64,7 @@ jobs:
           java --version
           mvn -v
 
+
       - name: Requires builds
         run: |
           if [[ ${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_fx }}${{ github.event.client_payload.skip_test }}" ]]; then

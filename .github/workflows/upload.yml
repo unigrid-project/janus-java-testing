@@ -40,6 +40,7 @@ jobs:
             skip: ${{ inputs.skip_macos }}${{ github.event.client_payload.skip }}
     name: Upload to release
     runs-on: ${{ matrix.os }}
+    if: ${{ matrix.skip == 'false' && (github.event.client_payload.target_module == '' || github.event.client_payload.target_module == 'bootstrap') }} 
     permissions: write-all
     steps:
       - uses: actions/checkout@v3
@@ -67,7 +68,6 @@ jobs:
           echo ${{ github.event.client_payload.target_module }}
 
       - name: Build Installer
-        if: ${{ matrix.skip == 'false' && (github.event.client_payload.target_module == '' || github.event.client_payload.target_module == 'bootstrap') }} 
         shell: bash
         run: |
           export version=$(echo ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} | cut --complement -c 1 | cut -d '_' -f1)

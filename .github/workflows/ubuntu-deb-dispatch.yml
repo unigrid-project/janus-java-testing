@@ -18,22 +18,24 @@ on:
         type: string
         description: 'Tag name (vX.Y.Z) for Janus'
         required: true
-        default: 'v1.0.30'
+        default: ''
       parent_tag:
         type: string
         description: 'Parent tag (vX.Y.Z)'
         required: false
-        default: 'v1.0.35'
+        default: ''
       janus_repo:
         type: string
         description: 'Janus repository'
-        default: 'janus-java-testing'
+        default: 'janus-java'
         required: true
       update_repo:
         type: string
-        description: 'Update repository'
-        default: 'unigrid-update-testing'
-        required: true
+        description: 'Update repo (for the configs)'
+        type: choice
+        options:
+        - unigrid-update-testing
+        - unigrid-update
       janus_branch:
         type: string
         description: 'Janus branch'
@@ -70,7 +72,8 @@ jobs:
             check: 'Maven test'
             workflow: 'ubuntu-deb-test-suite.yml'
             repo: '${{ inputs.janus_repo }}'
-            branch: '${{ inputs.janus_branch }}'
+            branch: 'master'
+            test_branch: '${{ github.ref_name }}'
 
           - release: set-version
             name: Set version & Remove snapshot
@@ -79,7 +82,7 @@ jobs:
             check: 'Set version'
             workflow: 'ubuntu-deb-set-version.yml'
             repo: '${{ inputs.janus_repo }}'
-            branch: '${{ inputs.janus_branch }}'
+            branch: 'master'
 
           - release: create-release
             name: Create release & tag
@@ -88,7 +91,7 @@ jobs:
             check: 'Create release'
             workflow: 'ubuntu-deb-release-create.yml'
             repo: '${{ inputs.janus_repo }}'
-            branch: '${{ inputs.janus_branch }}'
+            branch: 'master'
 
           - release: upload
             name: Upload to release tag
@@ -97,7 +100,7 @@ jobs:
             check: 'Upload to release'
             workflow: 'upload.yml'
             repo: '${{ inputs.janus_repo }}'
-            branch: '${{ inputs.janus_branch }}'
+            branch: 'master'
 
           - release: bump
             name: Bump version
@@ -106,7 +109,7 @@ jobs:
             check: 'Bump'
             workflow: 'ubuntu-deb-bump.yml'
             repo: '${{ inputs.janus_repo }}'
-            branch: '${{ inputs.janus_branch }}'
+            branch: 'master'
 
           - release: update-config
             name: Update config files
@@ -118,6 +121,9 @@ jobs:
             branch: '${{ inputs.update_branch }}'
 
     steps:
+      - name: Test branch
+        run: echo test branch here, ${{ matrix.test_branch }}
+
       - name: Check if skip this dispatch job
         if: >
           matrix.event == 'dispatch-release-update' && inputs.target_module == 'bootstrap' ||
@@ -127,7 +133,7 @@ jobs:
       - uses: actions/checkout@v3
         if: env.skip != 'true'
         with:
-          ref: ${{ inputs.janus_branch }}
+          ref: master
 
       - name: Dispatch an action and get the run ID
         if: env.skip != 'true'

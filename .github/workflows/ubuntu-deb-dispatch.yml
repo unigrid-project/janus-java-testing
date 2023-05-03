@@ -30,7 +30,6 @@ on:
         default: 'janus-java'
         required: true
       update_repo:
-        type: string
         description: 'Update repo (for the configs)'
         type: choice
         options:

@@ -9,11 +9,13 @@ on:
         options:
         - bootstrap
         - fx
-      tag_delimeter:
-        type: string
-        description: 'Delimeter for tag'
-        required: true
-        default: '-'
+      bump:
+        description: 'Bump version'
+        type: choice
+        options:
+        - Major
+        - Minor
+        - Revision
       tag_name:
         type: string
         description: 'Tag name (vX.Y.Z) for Janus'
@@ -24,27 +26,12 @@ on:
         description: 'Parent tag (vX.Y.Z)'
         required: false
         default: ''
-      janus_repo:
-        type: string
-        description: 'Janus repository'
-        default: 'janus-java'
-        required: true
       update_repo:
-        description: 'Update repo (for the configs)'
+        description: 'Update repo (on main, for the configs)'
         type: choice
         options:
         - unigrid-update-testing
         - unigrid-update
-      janus_branch:
-        type: string
-        description: 'Janus branch'
-        default: 'master'
-        required: true
-      update_branch:
-        type: string
-        description: 'Update branch'
-        default: 'main'
-        required: true
       skip_test:
         type: boolean
         description: Skip test
@@ -70,9 +57,8 @@ jobs:
             payload: '{"skip_test": "${{ inputs.skip_test }}"}'
             check: 'Maven test'
             workflow: 'ubuntu-deb-test-suite.yml'
-            repo: '${{ inputs.janus_repo }}'
-            branch: 'master'
-            test_branch: '${{ github.ref_name }}'
+            repo: '${{ github.repository }}'
+            branch: '${{ github.ref_name }}'
 
           - release: set-version
             name: Set version & Remove snapshot
@@ -80,26 +66,26 @@ jobs:
             inputs: '{"target_module": "${{ inputs.target_module }}","tag_name": "${{ inputs.tag_name }}","parent_tag": "${{ inputs.parent_tag }}"}'
             check: 'Set version'
             workflow: 'ubuntu-deb-set-version.yml'
-            repo: '${{ inputs.janus_repo }}'
-            branch: 'master'
+            repo: '${{ github.repository }}'
+            branch: '${{ github.ref_name }}'
 
           - release: create-release
             name: Create release & tag
             event: dispatch-release
-            inputs: '{"tag_name": "${{ inputs.tag_name }}${{ inputs.tag_delimeter }}${{ inputs.target_module }}","parent_tag": "${{ inputs.parent_tag }}"}'
+            inputs: '{"tag_name": "${{ inputs.tag_name }}-${{ inputs.target_module }}","parent_tag": "${{ inputs.parent_tag }}"}'
             check: 'Create release'
             workflow: 'ubuntu-deb-release-create.yml'
-            repo: '${{ inputs.janus_repo }}'
-            branch: 'master'
+            repo: '${{ github.repository }}'
+            branch: '${{ github.ref_name }}'
 
           - release: upload
             name: Upload to release tag
             event: dispatch-upload
-            inputs: '{"tag_name": "${{ inputs.tag_name }}","tag_delimeter": "${{ inputs.tag_delimeter }}","target_module": "${{ inputs.target_module }}","skip_ubuntu": "false","skip_windows": "false","skip_macos": "false"}'
+            inputs: '{"tag_name": "${{ inputs.tag_name }}","tag_delimeter": "-","target_module": "${{ inputs.target_module }}","skip_ubuntu": "false","skip_windows": "false","skip_macos": "false"}'
             check: 'Upload to release'
             workflow: 'upload.yml'
-            repo: '${{ inputs.janus_repo }}'
-            branch: 'master'
+            repo: '${{ github.repository }}'
+            branch: '${{ github.ref_name }}'
 
           - release: bump
             name: Bump version
@@ -107,17 +93,16 @@ jobs:
             inputs: '{"target_module": "${{ inputs.target_module }}"}'
             check: 'Bump'
             workflow: 'ubuntu-deb-bump.yml'
-            repo: '${{ inputs.janus_repo }}'
-            branch: 'master'
+            repo: '${{ github.repository }}'
+            branch: '${{ github.ref_name }}'
 
           - release: update-config
             name: Update config files
             event: dispatch-update-config
-            inputs: '{"branch": "${{ inputs.update_branch }}"}'
             check: 'Update config'
             workflow: 'ubuntu-deb-update-config.yml'
             repo: '${{ inputs.update_repo }}'
-            branch: '${{ inputs.update_branch }}'
+            branch: 'main'
 
     steps:
       - name: Test branch
@@ -131,8 +116,6 @@ jobs:
 
       - uses: actions/checkout@v3
         if: env.skip != 'true'
-        with:
-          ref: master
 
       - name: Dispatch an action and get the run ID
         if: env.skip != 'true'

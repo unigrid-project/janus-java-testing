@@ -8,7 +8,7 @@ on:
     inputs:
       distinct_id:
         type: string
-        description: 'distinct_id'
+        description: 'distinct_id used by return-dispatch'
       skip_fx:
         type: boolean
         description: Skip fx
@@ -40,12 +40,11 @@ jobs:
     permissions: write-all
 
     steps:
-      - uses: actions/checkout@v3
       - name: echo distinct ID ${{ inputs.distinct_id }}
+        if: inputs.distinct_id != ''
         run: echo ${{ inputs.distinct_id }}
-      - run: 'echo "input.skip_fx: ${{ inputs.skip_fx }}"'
-      - run: 'echo "skip_test field: ${{ github.event.client_payload.skip_test }}"'
-      - run: 'echo "payload: ${{ toJson(github.event.client_payload) }}"'
+
+      - uses: actions/checkout@v3
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -59,46 +58,38 @@ jobs:
         with:
           maven-version: 3.8.6
 
-      - name: Version checks
-        run: |
-          java --version
-          mvn -v
-
-
       - name: Requires builds
         run: |
-          if [[ ${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_fx }}${{ github.event.client_payload.skip_test }}" ]]; then
-            xvfb-run -a mvn -f config/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
-            xvfb-run -a mvn -f pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
-            xvfb-run -a mvn -f bootstrap/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
-          fi
+          xvfb-run -a mvn -f config/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
+          xvfb-run -a mvn -f pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
+          xvfb-run -a mvn -f bootstrap/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
 
       - name: Test fx
         run: |
-          if [[ ${{ inputs.skip_fx }}${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_fx }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ inputs.skip_fx }} == 'false' ]]; then
             xvfb-run -a mvn -f fx/pom.xml test -Dcheckstyle.skip
           fi
 
       - name: Test bootstrap
         run: |
-          if [[ ${{ inputs.skip_bootstrap }}${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_bootstrap }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ inputs.skip_bootstrap }} == 'false' ]; then
             xvfb-run -a mvn -f bootstrap/pom.xml test -Dcheckstyle.skip
           fi
 
       - name: Test desktop
         run: |
-          if [[ ${{ inputs.skip_desktop }}${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_desktop }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ inputs.skip_desktop }} == 'false'  then
             xvfb-run -a mvn -f desktop/pom.xml test -Dcheckstyle.skip
           fi
 
       - name: Test config
         run: |
-          if [[ ${{ inputs.skip_config }}${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_config }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ inputs.skip_config }} == 'false' then
             xvfb-run -a mvn -f config/pom.xml test -Dcheckstyle.skip
           fi
 
       - name: Test checkstyle
         run: |
-          if [[ ${{ inputs.skip_checkstyle }}${{ github.event.client_payload.skip_test }} == 'false' || -z "${{ inputs.skip_checkstyle }}${{ github.event.client_payload.skip_test }}" ]]; then
+          if [[ ${{ inputs.skip_checkstyle }} == 'false' ]]; then
             xvfb-run -a mvn checkstyle:check
           fi

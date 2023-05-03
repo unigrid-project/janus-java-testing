@@ -6,18 +6,15 @@ on:
     - dispatch-bump
   workflow_dispatch:
     inputs:
-      skip_fx:
-        type: boolean
-        description: Skip fx
-        default: false
-      skip_bootstrap:
-        type: boolean
-        description: Skip bootstrap
-        default: false
-      skip_desktop:
-        type: boolean
-        description: Skip desktop
-        default: false
+      distinct_id:
+        type: string
+        description: 'distinct_id used by return-dispatch'
+      target_module:
+        description: 'Target module'
+        type: choice
+        options:
+        - bootstrap
+        - fx
       generate_backup_poms:
         type: boolean
         description: Generate backup poms
@@ -39,6 +36,10 @@ jobs:
     permissions: write-all
 
     steps:
+      - name: echo distinct ID ${{ inputs.distinct_id }}
+        if: inputs.distinct_id != ''
+        run: echo ${{ inputs.distinct_id }}
+
       - uses: actions/checkout@v3
 
       - name: Set up JDK 17
@@ -53,17 +54,11 @@ jobs:
         with:
           maven-version: 3.8.6
 
-      - name: Version checks
-        run: |
-          java --version
-          mvn -v
-
       - name: Set env variable for dispatch
-        if: github.event.client_payload.target_module != ''
         run: |
-          if [[ ${{ github.event.client_payload.target_module }} == 'fx' ]]; then
+          if [[ ${{ inputs.target_module }} == 'fx' ]]; then
             echo "skip_fx=false" >> $GITHUB_ENV
-          else
+          elif [[ ${{ inputs.target_module }} == 'bootstrap' ]]; then
             echo "skip_bootstrap=false" >> $GITHUB_ENV
             echo "skip_desktop=false" >> $GITHUB_ENV
           fi

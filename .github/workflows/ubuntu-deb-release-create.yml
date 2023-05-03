@@ -6,12 +6,9 @@ on:
     - dispatch-release
   workflow_dispatch:
     inputs:
-      target_module:
-        description: 'Target module'
-        type: choice
-        options:
-        - fx
-        - bootstrap
+      distinct_id:
+        type: string
+        description: 'distinct_id used by return-dispatch'
       tag_name:
         description: 'Module tag'
         required: true
@@ -26,12 +23,14 @@ jobs:
     permissions: write-all
 
     steps:
+      - name: echo distinct ID ${{ inputs.distinct_id }}
+        if: inputs.distinct_id != ''
+        run: echo ${{ inputs.distinct_id }}
+
       - uses: actions/checkout@v3
-      - run: echo 'target_module=${{ inputs.target_module }}, tag_name=${{ inputs.tag_name }}, parent_tag=${{ inputs.parent_tag }}'
-      - run: 'echo "payload: ${{ toJson(github.event.client_payload) }}"'
 
       - name: Set up JDK 17
-        if: ${{ inputs.parent_tag == '' && github.event.client_payload.parent_tag == '' }}
+        if: ${{ inputs.parent_tag == '' }}
         uses: actions/setup-java@v3
         with:
           java-version: '17'
@@ -39,32 +38,24 @@ jobs:
           cache: maven
 
       - name: Set up Maven
-        if: ${{ inputs.parent_tag == '' && github.event.client_payload.parent_tag == '' }}
+        if: ${{ inputs.parent_tag == '' }}
         uses: stCarolas/setup-maven@v4.5
         with:
           maven-version: 3.8.6
 
-      - name: Maven version
-        if: ${{ inputs.parent_tag == '' && github.event.client_payload.parent_tag == '' }}
-        run: mvn -v
-
       - name: Set parent tag
         run: |
-          if [[ -z "${{ inputs.parent_tag }}${{ github.event.client_payload.parent_tag }}" ]]; then
+          if [[ -z "${{ inputs.parent_tag }}" ]]; then
             echo "parent_tag=v$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
           else
-            echo "parent_tag=${{ inputs.parent_tag }}${{ github.event.client_payload.parent_tag }}" >> $GITHUB_ENV
+            echo "parent_tag=${{ inputs.parent_tag }}" >> $GITHUB_ENV
           fi
-
-      - name: Set parent tag
-        run: |
-          echo "env parent_tag = ${{ env.parent_tag }}"
 
       - uses: rickstaa/action-create-tag@v1
         name: Create tag
         id: "tag_create_tag"
         with:
-          tag: ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }}_${{ inputs.target_module }}${{ github.event.client_payload.target_module }}
+          tag: ${{ inputs.tag_name }}
           tag_exists_error: false
           message: "Tag created by github action"
 
@@ -79,7 +70,7 @@ jobs:
       - uses: ncipollo/release-action@v1
         name: Release tag
         with:
-          name: ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }}_${{ inputs.target_module }}${{ github.event.client_payload.target_module }}
-          tag: ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }}_${{ inputs.target_module }}${{ github.event.client_payload.target_module }}
+          name: ${{ inputs.tag_name }}
+          tag: ${{ inputs.tag_name }}
           generateReleaseNotes: true
           draft: true

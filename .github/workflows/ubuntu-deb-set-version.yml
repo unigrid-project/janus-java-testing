@@ -6,24 +6,21 @@ on:
     - dispatch-set-version
   workflow_dispatch:
     inputs:
+      distinct_id:
+        type: string
+        description: 'distinct_id used by return-dispatch'
+      target_module:
+        description: 'Target module'
+        type: choice
+        options:
+        - bootstrap
+        - fx
       tag_name:
         description: 'Tag name (vX.Y.Z)'
         required: true
       parent_tag:
         description: 'Parent tag (vX.Y.Z)'
         required: false
-      skip_fx:
-        type: boolean
-        description: Skip setting new fx version
-        default: false
-      skip_bootstrap:
-        type: boolean
-        description: Skip setting new bootstrap version
-        default: false
-      skip_desktop:
-        type: boolean
-        description: Skip setting new desktop version
-        default: false
       generate_backup_poms:
         type: boolean
         description: Generate backup poms
@@ -34,9 +31,9 @@ on:
         default: false
 
 env:
-  skip_fx: ${{ inputs.skip_fx }}
-  skip_bootstrap: ${{ inputs.skip_bootstrap }}
-  skip_desktop: ${{ inputs.skip_desktop }}
+  skip_fx: false
+  skip_bootstrap: false
+  skip_desktop: false
 
 jobs:
   set-version:
@@ -45,6 +42,10 @@ jobs:
     permissions: write-all
 
     steps:
+      - name: echo distinct ID ${{ inputs.distinct_id }}
+        if: inputs.distinct_id != ''
+        run: echo ${{ inputs.distinct_id }}
+
       - uses: actions/checkout@v3
 
       - name: Set up JDK 17
@@ -59,31 +60,26 @@ jobs:
         with:
           maven-version: 3.8.6
 
-      - name: Version checks
-        run: |
-          java --version
-          mvn -v
-
       - name: Requires config build
         run: xvfb-run -a mvn -f config/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
 
       - name: Remove snapshot and set version
         run: |
-          if [[ ${{ github.event.client_payload.target_module }} == 'fx' ]]; then
+          if [[ ${{ inputs.target_module }} == 'fx' ]]; then
             export skip_bootstrap=true
             export skip_desktop=true
-          elif [[ ${{ github.event.client_payload.target_module }} == 'bootstrap' ]]; then
+          elif [[ ${{ inputs.target_module }} == 'bootstrap' ]]; then
             export skip_fx=true
           fi
 
           mvn -f pom.xml versions:set -DremoveSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
 
-          if [[ ${{ inputs.parent_tag }}${{ github.event.client_payload.parent_tag }} != '' ]]; then
-            export version_parent=$(echo ${{ inputs.parent_tag }}${{ github.event.client_payload.parent_tag }} | cut --complement -c 1)
+          if [[ ${{ inputs.parent_tag }} != '' ]]; then
+            export version_parent=$(echo ${{ inputs.parent_tag }} | cut -d v -f2 | cut -d "-" -f1)
             mvn -f pom.xml versions:set -DnewVersion=$version_parent -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
           fi
 
-          export version=$(echo ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} | cut --complement -c 1)
+          export version=$(echo ${{ inputs.tag_name }} | cut -d v -f2 | cut -d "-" -f1)
 
           for module in fx bootstrap desktop; do
             mvn -f $module/pom.xml versions:set -DremoveSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}

@@ -6,12 +6,26 @@ on:
     - dispatch-upload
   workflow_dispatch:
     inputs:
+      distinct_id:
+        type: string
+        description: 'distinct_id used by return-dispatch'
+      target_module:
+        description: 'Target module'
+        type: choice
+        options:
+        - bootstrap
+        - fx
+      tag_delimeter:
+        type: string
+        description: 'Delimeter for tag'
+        required: true
+        default: '-'
       tag_name:
         description: 'Tag name (vX.Y.Z)'
         required: true
       skip_ubuntu:
         type: boolean
-        description: Skip ubuntu
+        description: Skip ubuntu, will skip upload artifacts files too
         default: false
       skip_windows:
         type: boolean
@@ -24,6 +38,8 @@ on:
 
 env:
   GH_TOKEN: ${{ secrets.ACTION_PAT }}
+  config_matchers: config/target/config*test.xml
+  fx_matchers: fx/target/fx*.jar
 
 jobs:
   upload:
@@ -33,20 +49,29 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - os: ubuntu-latest
-            skip: ${{ inputs.skip_ubuntu }}${{ github.event.client_payload.skip }}
+            skip: ${{ inputs.skip_ubuntu }}
           - os: windows-latest
-            skip: ${{ inputs.skip_windows }}${{ github.event.client_payload.skip }}
+            skip: ${{ inputs.skip_windows }}
           - os: macos-latest
-            skip: ${{ inputs.skip_macos }}${{ github.event.client_payload.skip }}
+            skip: ${{ inputs.skip_macos }}
     name: Upload to release
     runs-on: ${{ matrix.os }}
     permissions: write-all
     steps:
+      - name: echo distinct ID ${{ inputs.distinct_id }}
+        if: inputs.distinct_id != ''
+        run: echo ${{ inputs.distinct_id }}
+
+      - name: Print os
+        run: echo "${{ runner.os }}"
+
       - uses: actions/checkout@v3
-        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
+
+      - name: Output Inputs
+        run: echo "${{ toJSON(github.event.inputs) }}"
 
       - name: Set up JDK 17
-        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
+        if: matrix.skip != 'true'
         uses: actions/setup-java@v3
         with:
           java-version: '17'
@@ -54,34 +79,25 @@ jobs:
           cache: maven
 
       - name: Set up Maven
-        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
+        if: matrix.skip != 'true'
         uses: stCarolas/setup-maven@v4.5
         with:
           maven-version: 3.8.6
 
-      - name: Version checks
-        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
-        run: |
-          java --version
-          mvn -v
-
-      - name: print env
-        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
-        run: |
-          echo ${{ matrix.skip }}
-
-      - name: Build Installer
-        if: ${{ matrix.skip != 'true' && (github.event.client_payload.target_module != 'fx') }}
+      - name: Build images, configs and upload them
+        if: matrix.skip != 'true' && inputs.target_module == 'bootstrap'
         shell: bash
         run: |
-          export version=$(echo ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} | cut --complement -c 1 | cut -d '_' -f1)
+          export version=$(echo ${{ inputs.tag_name }} | cut -d v -f2 | cut -d "${{ inputs.tag_delimeter }}" -f1)
           if [[ "${{ runner.os }}" == 'Linux' ]]; then
             export filename_matcher="unigrid_${version}*amd64.deb"
             export filename="unigrid_${version}_amd64.deb"
             additional_cmd="sudo apt-get -y install alien"
             additional_cmd="$additional_cmd && alien -r $filename"
             additional_cmd="$additional_cmd && mv unigrid-${version}*x86_64.rpm unigrid-${version}-x86_64.rpm"
-            additional_cmd="$additional_cmd && gh release upload ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} unigrid-${version}-x86_64.rpm"
+            additional_cmd="$additional_cmd && gh release upload v${version}${{ inputs.tag_delimeter }}${{ inputs.target_module }} unigrid-${version}-x86_64.rpm --clobber"
+            additional_cmd="$additional_cmd && mkdir -p artifacts"
+            additional_cmd="$additional_cmd && rsync -av ${{ env.config_matchers }} artifacts"
           elif [[ "${{ runner.os }}" == 'Windows' ]]; then
             export filename_matcher="Unigrid-${version}*.msi"
             export filename="Unigrid-${version}.msi"
@@ -110,6 +126,24 @@ jobs:
             codesign -vv -d $filename
           fi
 
-          gh release upload ${{ inputs.tag_name }}${{ github.event.client_payload.tag_name }} $filename
+          gh release upload v${version}${{ inputs.tag_delimeter }}${{ inputs.target_module }} $filename --clobber
 
           eval $additional_cmd
+
+      - name: Build config and upload them
+        if: matrix.skip != 'true' && runner.os == 'Linux' && inputs.target_module == 'fx'
+        shell: bash
+        run: |
+          export version=$(echo ${{ inputs.tag_name }} | cut -c 2- | cut -d "${{ inputs.tag_delimeter }}" -f1)
+          mvn -f config/pom.xml install -Dmaven.test.skip=true -Dcheckstyle.skip
+          mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
+          gh release upload v${version}${{ inputs.tag_delimeter }}${{ inputs.target_module }} fx/target/fx-$version.jar --clobber
+          mkdir -p artifacts
+          rsync -av ${{ env.config_matchers }} artifacts
+
+      - name: Archive artifacts
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts
+          path: artifacts

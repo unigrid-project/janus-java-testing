@@ -79,11 +79,13 @@ jobs:
           for module in fx desktop bootstrap; do
             export version=$(mvn -f $(echo $module)/pom.xml -q -DforceStdout help:evaluate -Dexpression=project.version)
             export version=$(echo $version | cut -d v -f2 | cut -d "-" -f1)
+
             if [ "${{ inputs.bump }}" = "Major" ]; then
               export version=$(echo $version | awk -F. '{print $1+1".0.0"}')
             elif [ "${{ inputs.bump }}" = "Minor" ]; then
               export version=$(echo $version | awk -F. '{print $1"."$2+1".0"}')
             fi
+
             mvn -f $module/pom.xml versions:set -DnewVersion=${version}${{ env.snapshot }} -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
 
             if [[ $(printenv skip_$module) == 'false' ]]; then
@@ -95,7 +97,13 @@ jobs:
           done
 
           export version_parent=$(mvn -f pom.xml -q -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive exec:exec)
-          mvn -f pom.xml versions:set -DnextSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
+
+          if [ "${{ inputs.bump }}" = "Major" || "${{ inputs.bump }}" = "Minor" ]; then
+            mvn -f pom.xml versions:set -DnewVersion=${version}${{ env.snapshot }} -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
+          else
+            mvn -f pom.xml versions:set -DnextSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
+          fi
+          
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:

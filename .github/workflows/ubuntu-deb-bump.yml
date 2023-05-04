@@ -85,13 +85,13 @@ jobs:
             else
               export version_$module=$(echo $(printenv version_$module) | awk -F. '{print $1"."$2"."$3+1}')
             fi
-            mvn -f $module/pom.xml versions:set -DnewVersion=$(printenv version_$module)${{ env.snapshot }}-DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
+            mvn -f $module/pom.xml versions:set -DnewVersion=$(printenv version_$module)${{ env.snapshot }} -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
             if [[ $(printenv skip_$module) == 'false' ]]; then
-              mvn -f $module/pom.xml versions:set -DnewVersion=${version}${{ env.snapshot }}-DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
+              mvn -f $module/pom.xml versions:set -DnewVersion=${version}${{ env.snapshot }} -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
             fi
           done
           export version_parent=$(mvn -f pom.xml -q -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive exec:exec)
-          mvn -f pom.xml versions:set -DnewVersion=$(printenv version_parent)${{ env.snapshot }}-DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
+          mvn -f pom.xml versions:set -DnewVersion=$(printenv version_parent)${{ env.snapshot }} -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
           mvn -f pom.xml versions:set -DnextSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
 
       - uses: stefanzweifel/git-auto-commit-action@v4

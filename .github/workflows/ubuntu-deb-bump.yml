@@ -15,6 +15,13 @@ on:
         options:
         - bootstrap
         - fx
+      bump:
+        description: 'Bump version'
+        type: choice
+        options:
+        - Revision
+        - Minor
+        - Major
       generate_backup_poms:
         type: boolean
         description: Generate backup poms
@@ -28,6 +35,7 @@ env:
   skip_fx: ${{ inputs.skip_fx }}
   skip_bootstrap: ${{ inputs.skip_bootstrap }}
   skip_desktop: ${{ inputs.skip_desktop }}
+  snapshot: "-SNAPSHOT"
 
 jobs:
   bump:
@@ -70,13 +78,20 @@ jobs:
         run: |
           for module in fx desktop bootstrap; do
             export version_$module=$(mvn -f $(echo $module)/pom.xml -q -DforceStdout help:evaluate -Dexpression=project.version)
-            mvn -f $module/pom.xml versions:set -DnewVersion=$(printenv version_$module)-SNAPSHOT -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
+            if [ "${{ inputs.bump }}" = "Major" ]; then
+              export version_$module=$(echo $(printenv version_$module) | awk -F. '{print $1+1".0.0"}')
+            elif [ "${{ inputs.bump }}" = "Minor" ]; then
+              export version_$module=$(echo $(printenv version_$module) | awk -F. '{print $1"."$2+1".0"}')
+            else
+              export version_$module=$(echo $(printenv version_$module) | awk -F. '{print $1"."$2"."$3+1}')
+            fi
+            mvn -f $module/pom.xml versions:set -DnewVersion=$(printenv version_$module)${{ env.snapshot }}-DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
             if [[ $(printenv skip_$module) == 'false' ]]; then
-              mvn -f $module/pom.xml versions:set -DnextSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
+              mvn -f $module/pom.xml versions:set -DnewVersion=${version}${{ env.snapshot }}-DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
             fi
           done
           export version_parent=$(mvn -f pom.xml -q -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive exec:exec)
-          mvn -f pom.xml versions:set -DnewVersion=$(printenv version_parent)-SNAPSHOT -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
+          mvn -f pom.xml versions:set -DnewVersion=$(printenv version_parent)${{ env.snapshot }}-DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
           mvn -f pom.xml versions:set -DnextSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
 
       - uses: stefanzweifel/git-auto-commit-action@v4

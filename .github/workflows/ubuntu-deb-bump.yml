@@ -91,6 +91,7 @@ jobs:
             if [[ $(printenv skip_$module) == 'false' ]]; then
               if [ "${{ inputs.bump }}" = "Revision" ]; then
                 export version=$(echo $version | awk -F. '{print $1"."$2"."$3+1}')
+                export version_title=$version
               fi
               mvn -f $module/pom.xml versions:set -DnewVersion=${version}${{ env.snapshot }} -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
             fi
@@ -103,8 +104,7 @@ jobs:
           else
             mvn -f pom.xml versions:set -DnextSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
           fi
-          
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Github actions - ${{ github.workflow }} - ${{ inputs.bump }}
+          commit_message: Github actions - ${{ github.workflow }} - $version_title

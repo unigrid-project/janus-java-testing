@@ -82,13 +82,13 @@ jobs:
 
             if [[ $(printenv skip_$module) == 'false' ]]; then
               if [ "${{ inputs.bump }}" = "Major" ]; then
-                export version_$module=$(echo $(printenv version_$module) | awk -F. '{print $1+1".0.0"}')
+                export version=$(echo $(printenv version_$module) | awk -F. '{print $1+1".0.0"}')
               elif [ "${{ inputs.bump }}" = "Minor" ]; then
-                export version_$module=$(echo $(printenv version_$module) | awk -F. '{print $1"."$2+1".0"}')
+                export version=$(echo $(printenv version_$module) | awk -F. '{print $1"."$2+1".0"}')
               else
-                export version_$module=$(echo $(printenv version_$module) | awk -F. '{print $1"."$2"."$3+1}')
+                export version=$(echo $(printenv version_$module) | awk -F. '{print $1"."$2"."$3+1}')
               fi
-              mvn -f $module/pom.xml versions:set -DnewVersion=$(printenv version_$module)${{ env.snapshot }} -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
+              mvn -f $module/pom.xml versions:set -DnewVersion=${version}${{ env.snapshot }} -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
             fi
           done
 

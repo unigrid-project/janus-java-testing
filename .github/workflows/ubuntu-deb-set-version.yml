@@ -18,9 +18,6 @@ on:
       tag_name:
         description: 'Tag name (vX.Y.Z)'
         required: true
-      parent_tag:
-        description: 'Parent tag (vX.Y.Z)'
-        required: false
       generate_backup_poms:
         type: boolean
         description: Generate backup poms
@@ -74,16 +71,11 @@ jobs:
 
           mvn -f pom.xml versions:set -DremoveSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
 
-          if [[ ${{ inputs.parent_tag }} != '' ]]; then
-            export version_parent=$(echo ${{ inputs.parent_tag }} | cut -d v -f2 | cut -d "-" -f1)
-            mvn -f pom.xml versions:set -DnewVersion=$version_parent -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
-          fi
-
           export version=$(echo ${{ inputs.tag_name }} | cut -d v -f2 | cut -d "-" -f1)
 
           for module in fx bootstrap desktop; do
             mvn -f $module/pom.xml versions:set -DremoveSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
-            if [[ $(printenv skip_$module) != true ]]; then
+            if [[ $(printenv skip_$module) != true && '$version' != '' ]]; then
               mvn -f $module/pom.xml versions:set -DnewVersion=$version -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
             fi
           done

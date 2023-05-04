@@ -13,19 +13,9 @@ on:
         description: 'Bump version'
         type: choice
         options:
-        - Major
-        - Minor
         - Revision
-      tag_name:
-        type: string
-        description: 'Tag name (vX.Y.Z) for Janus'
-        required: true
-        default: ''
-      parent_tag:
-        type: string
-        description: 'Parent tag (vX.Y.Z)'
-        required: false
-        default: ''
+        - Minor
+        - Major
       update_repo:
         description: 'Update repo (on main, for the configs)'
         type: choice
@@ -63,7 +53,7 @@ jobs:
           - release: set-version
             name: Set version & Remove snapshot
             event: dispatch-set-version
-            inputs: '{"target_module": "${{ inputs.target_module }}","tag_name": "${{ inputs.tag_name }}","parent_tag": "${{ inputs.parent_tag }}"}'
+            inputs: '{"target_module": "${{ inputs.target_module }}"}'
             check: 'Set version'
             workflow: 'ubuntu-deb-set-version.yml'
             repo: '${{ github.repository }}'
@@ -72,7 +62,7 @@ jobs:
           - release: create-release
             name: Create release & tag
             event: dispatch-release
-            inputs: '{"tag_name": "${{ inputs.tag_name }}-${{ inputs.target_module }}","parent_tag": "${{ inputs.parent_tag }}"}'
+            inputs: '{"tag_name": "${{ inputs.tag_name }}-${{ inputs.target_module }}"}'
             check: 'Create release'
             workflow: 'ubuntu-deb-release-create.yml'
             repo: '${{ github.repository }}'
@@ -81,7 +71,7 @@ jobs:
           - release: upload
             name: Upload to release tag
             event: dispatch-upload
-            inputs: '{"tag_name": "${{ inputs.tag_name }}","tag_delimeter": "-","target_module": "${{ inputs.target_module }}","skip_ubuntu": "false","skip_windows": "false","skip_macos": "false"}'
+            inputs: '{"tag_name": "${{ inputs.tag_name }}","target_module": "${{ inputs.target_module }}","skip_ubuntu": "false","skip_windows": "false","skip_macos": "false"}'
             check: 'Upload to release'
             workflow: 'upload.yml'
             repo: '${{ github.repository }}'
@@ -90,7 +80,7 @@ jobs:
           - release: bump
             name: Bump version
             event: dispatch-bump
-            inputs: '{"target_module": "${{ inputs.target_module }}"}'
+            inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}"}'
             check: 'Bump'
             workflow: 'ubuntu-deb-bump.yml'
             repo: '${{ github.repository }}'
@@ -110,7 +100,6 @@ jobs:
 
       - name: Check if skip this dispatch job
         if: >
-          matrix.event == 'dispatch-release-update' && inputs.target_module == 'bootstrap' ||
           matrix.event == 'dispatch-test' && inputs.skip_test == true
         run: echo "skip=true" >> $GITHUB_ENV
 

@@ -12,23 +12,23 @@ on:
       skip_fx:
         type: boolean
         description: Skip fx
-        default: false
+        default: true
       skip_bootstrap:
         type: boolean
         description: Skip bootstrap
-        default: false
+        default: true
       skip_desktop:
         type: boolean
         description: Skip desktop
-        default: false
+        default: true
       skip_config:
         type: boolean
         description: Skip config
-        default: false
+        default: true
       skip_checkstyle:
         type: boolean
         description: Skip checkstyle
-        default: false
+        default: true
   # Triggers the workflow At minute 0 past every 6th hour
   schedule:
     - cron: "0 */6 * * *"

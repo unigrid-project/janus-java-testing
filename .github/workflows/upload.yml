@@ -15,31 +15,27 @@ on:
         options:
         - bootstrap
         - fx
-      tag_delimeter:
-        type: string
-        description: 'Delimeter for tag'
-        required: true
-        default: '-'
       tag_name:
         description: 'Tag name (vX.Y.Z)'
         required: true
       skip_ubuntu:
         type: boolean
         description: Skip ubuntu, will skip upload artifacts files too
-        default: false
+        default: true
       skip_windows:
         type: boolean
         description: Skip windows
-        default: false
+        default: true
       skip_macos:
         type: boolean
         description: Skip macos
-        default: false
+        default: true
 
 env:
   GH_TOKEN: ${{ secrets.ACTION_PAT }}
   config_matchers: config/target/config*test.xml
   fx_matchers: fx/target/fx*.jar
+  tag_delimeter: '-'
 
 jobs:
   upload:
@@ -88,14 +84,14 @@ jobs:
         if: matrix.skip != 'true' && inputs.target_module == 'bootstrap'
         shell: bash
         run: |
-          export version=$(echo ${{ inputs.tag_name }} | cut -d v -f2 | cut -d "${{ inputs.tag_delimeter }}" -f1)
+          export version=$(echo ${{ inputs.tag_name }} | cut -d v -f2 | cut -d "${{ env.tag_delimeter }}" -f1)
           if [[ "${{ runner.os }}" == 'Linux' ]]; then
             export filename_matcher="unigrid_${version}*amd64.deb"
             export filename="unigrid_${version}_amd64.deb"
             additional_cmd="sudo apt-get -y install alien"
             additional_cmd="$additional_cmd && alien -r $filename"
             additional_cmd="$additional_cmd && mv unigrid-${version}*x86_64.rpm unigrid-${version}-x86_64.rpm"
-            additional_cmd="$additional_cmd && gh release upload v${version}${{ inputs.tag_delimeter }}${{ inputs.target_module }} unigrid-${version}-x86_64.rpm --clobber"
+            additional_cmd="$additional_cmd && gh release upload v${version}${{ env.tag_delimeter }}${{ inputs.target_module }} unigrid-${version}-x86_64.rpm --clobber"
             additional_cmd="$additional_cmd && mkdir -p artifacts"
             additional_cmd="$additional_cmd && rsync -av ${{ env.config_matchers }} artifacts"
           elif [[ "${{ runner.os }}" == 'Windows' ]]; then
@@ -126,7 +122,7 @@ jobs:
             codesign -vv -d $filename
           fi
 
-          gh release upload v${version}${{ inputs.tag_delimeter }}${{ inputs.target_module }} $filename --clobber
+          gh release upload v${version}${{ env.tag_delimeter }}${{ inputs.target_module }} $filename --clobber
 
           eval $additional_cmd
 
@@ -134,10 +130,10 @@ jobs:
         if: matrix.skip != 'true' && runner.os == 'Linux' && inputs.target_module == 'fx'
         shell: bash
         run: |
-          export version=$(echo ${{ inputs.tag_name }} | cut -c 2- | cut -d "${{ inputs.tag_delimeter }}" -f1)
+          export version=$(echo ${{ inputs.tag_name }} | cut -c 2- | cut -d "${{ env.tag_delimeter }}" -f1)
           mvn -f config/pom.xml install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
-          gh release upload v${version}${{ inputs.tag_delimeter }}${{ inputs.target_module }} fx/target/fx-$version.jar --clobber
+          gh release upload v${version}${{ env.tag_delimeter }}${{ inputs.target_module }} fx/target/fx-$version.jar --clobber
           mkdir -p artifacts
           rsync -av ${{ env.config_matchers }} artifacts
 

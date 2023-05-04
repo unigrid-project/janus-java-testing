@@ -16,7 +16,7 @@ on:
         - bootstrap
         - fx
       tag_name:
-        description: 'Tag name (vX.Y.Z)'
+        description: 'Version'
         required: true
       generate_backup_poms:
         type: boolean

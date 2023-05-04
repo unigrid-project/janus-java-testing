@@ -78,7 +78,7 @@ jobs:
         run: |
           for module in fx desktop bootstrap; do
             export version=$(mvn -f $(echo $module)/pom.xml -q -DforceStdout help:evaluate -Dexpression=project.version)
-            export version=$(echo $version | cut -d v -f2 | cut -d "-" -f1)
+            export version=$(echo $version | cut -d v -f2 | awk -F. '{print $1"."$2"."$3+0}')
 
             if [ "${{ inputs.bump }}" = "Major" ]; then
               export version=$(echo $version | awk -F. '{print $1+1".0.0"}')

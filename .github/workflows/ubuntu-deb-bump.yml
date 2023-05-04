@@ -98,7 +98,7 @@ jobs:
 
           export version_parent=$(mvn -f pom.xml -q -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive exec:exec)
 
-          if [ "${{ inputs.bump }}" = "Major" || "${{ inputs.bump }}" = "Minor" ]; then
+          if [[ "${{ inputs.bump }}" == "Major" || "${{ inputs.bump }}" == "Minor" ]]; then
             mvn -f pom.xml versions:set -DnewVersion=${version}${{ env.snapshot }} -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
           else
             mvn -f pom.xml versions:set -DnextSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}

@@ -6,9 +6,15 @@ on:
       distinct_id:
         type: string
         description: 'distinct_id used by return-dispatch'
-      tag_name:
-        description: 'Module tag'
-        required: true
+      target_module:
+        description: 'Target module'
+        type: choice
+        options:
+        - bootstrap
+        - fx
+
+env:
+  tag_delimeter: '-'
 
 jobs:
   create-release:
@@ -40,26 +46,27 @@ jobs:
 
       - name: Set parent tag
         run: |
-          echo "parent_tag=v$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          echo "tag_parent=v$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          echo "tag_name=v$(mvn -f $(echo ${{ inputs.target_module }})/pom.xml -q -DforceStdout help:evaluate -Dexpression=project.version)${{ env.tag_delimeter }}${{ inputs.target_module }}" >> $GITHUB_ENV
 
       - uses: rickstaa/action-create-tag@v1
         name: Create tag
         with:
-          tag: ${{ inputs.tag_name }}
+          tag: ${{ env.tag_name }}
           tag_exists_error: false
           message: "Tag created by github action"
 
       - uses: rickstaa/action-create-tag@v1
         name: Create parent tag
         with:
-          tag: ${{ env.parent_tag }}
+          tag: ${{ env.tag_parent }}
           tag_exists_error: false
           message: "Tag created by github action"
 
       - uses: ncipollo/release-action@v1
         name: Release tag
         with:
-          name: ${{ inputs.tag_name }}
-          tag: ${{ inputs.tag_name }}
+          name: ${{ env.tag_name }}
+          tag: ${{ env.tag_name }}
           generateReleaseNotes: true
           draft: true

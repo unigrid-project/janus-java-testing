@@ -94,8 +94,8 @@ jobs:
             branch: 'main'
 
     steps:
-      - name: Test branch
-        run: echo test branch here, ${{ matrix.test_branch }}
+      - name: Print branch
+        run: echo "${{ matrix.branch }}"
 
       - name: Check if skip this dispatch job
         if: >

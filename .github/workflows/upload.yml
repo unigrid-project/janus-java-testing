@@ -53,12 +53,14 @@ jobs:
         run: echo ${{ inputs.distinct_id }}
 
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Output Inputs
         run: echo "${{ toJSON(github.event.inputs) }}"
 
       - name: Set up JDK 17
-        if: matrix.skip != 'true'
+        if: matrix.skip != true
         uses: actions/setup-java@v3
         with:
           java-version: '17'
@@ -66,23 +68,23 @@ jobs:
           cache: maven
 
       - name: Set up Maven
-        if: matrix.skip != 'true'
+        if: matrix.skip != true
         uses: stCarolas/setup-maven@v4.5
         with:
           maven-version: 3.8.6
 
       - name: Get tag name
-        id: get_tag
-        run: echo "::set-output name=tag_name::$(git describe --tags --abbrev=0)"
+        shell: bash
+        run: echo "tag_name=$(git describe --tags --abbrev=0 --match "*-*" HEAD)" >> $GITHUB_ENV
 
-      - name: Print Tag
-        run: echo "The current checkout tag is ${{ steps.get_tag.outputs.tag_name }}"
+      - name: Print tag_name
+        run: echo "${{ env.tag_name }}"
 
       - name: Build images, configs and upload them
-        if: matrix.skip != 'true' && inputs.target_module == 'bootstrap'
+        if: matrix.skip != true && inputs.target_module == 'bootstrap'
         shell: bash
         run: |
-          export version="${{ steps.get_tag.outputs.tag_name }}"
+          export version="${{ env.tag_name }}"
           export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
           if [[ "${{ runner.os }}" == 'Linux' ]]; then
             export filename_matcher="unigrid_${version}*amd64.deb"
@@ -121,19 +123,19 @@ jobs:
             codesign -vv -d $filename
           fi
 
-          gh release upload ${{ steps.get_tag.outputs.tag_name }} $filename --clobber
+          gh release upload ${{ env.tag_name }} $filename --clobber
 
           eval $additional_cmd
 
       - name: Build config and upload them
-        if: matrix.skip != 'true' && runner.os == 'Linux' && inputs.target_module == 'fx'
+        if: matrix.skip != true && runner.os == 'Linux' && inputs.target_module == 'fx'
         shell: bash
         run: |
-          export version="${{ steps.get_tag.outputs.tag_name }}"
+          export version="${{ env.tag_name }}"
           export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
           mvn -f config/pom.xml install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
-          gh release upload ${{ steps.get_tag.outputs.tag_name }} fx/target/fx-$version.jar --clobber
+          gh release upload ${{ env.tag_name }} fx/target/fx-$version.jar --clobber
           mkdir -p artifacts
           rsync -av ${{ env.config_matchers }} artifacts
 

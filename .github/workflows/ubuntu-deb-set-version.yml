@@ -67,16 +67,18 @@ jobs:
           fi
 
           mvn -f pom.xml versions:set -DremoveSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
-          export version="${{ inputs.tag_name }}"
-          export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
+
+          if [ -n "${{ inputs.tag_name }}" ]; then
+            export version="${{ inputs.tag_name }}"
+            export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
+          fi
 
           for module in fx bootstrap desktop; do
             mvn -f $module/pom.xml versions:set -DremoveSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
-            if [[ $(printenv skip_$module) != true && '$version' != '' ]]; then
+            if [[ $(printenv skip_$module) != true && $version != '' ]]; then
               mvn -f $module/pom.xml versions:set -DnewVersion=$version -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
             fi
           done
-          
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:

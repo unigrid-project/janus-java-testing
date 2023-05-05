@@ -38,11 +38,10 @@ jobs:
         include:
           - release: test
             name: Test suite
-            event: dispatch-test
             inputs: '{"skip_fx": "false","skip_bootstrap": "false","skip_desktop": "false","skip_config": "false","skip_checkstyle": "false"}'
             check: 'Maven test'
             workflow: 'ubuntu-deb-test-suite.yml'
-            repo: '${{ github.repository_name }}'
+            repo: '${{ github.event.repository.name }}'
             branch: '${{ github.ref_name }}'
 
           - release: set-version
@@ -50,7 +49,7 @@ jobs:
             inputs: '{"target_module": "${{ inputs.target_module }}"}'
             check: 'Set version'
             workflow: 'ubuntu-deb-set-version.yml'
-            repo: '${{ github.repository_name }}'
+            repo: '${{ github.event.repository.name }}'
             branch: '${{ github.ref_name }}'
 
           - release: create-release
@@ -58,7 +57,7 @@ jobs:
             inputs: '{"tag_name": "${{ inputs.tag_name }}-${{ inputs.target_module }}"}'
             check: 'Create release'
             workflow: 'ubuntu-deb-release-create.yml'
-            repo: '${{ github.repository_name }}'
+            repo: '${{ github.event.repository.name }}'
             branch: '${{ github.ref_name }}'
 
           - release: upload
@@ -66,7 +65,7 @@ jobs:
             inputs: '{"target_module": "${{ inputs.target_module }}","skip_ubuntu": "false","skip_windows": "false","skip_macos": "false"}'
             check: 'Upload to release'
             workflow: 'upload.yml'
-            repo: '${{ github.repository_name }}'
+            repo: '${{ github.event.repository.name }}'
             branch: '${{ github.ref_name }}'
 
           - release: bump
@@ -74,7 +73,7 @@ jobs:
             inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}"}'
             check: 'Bump'
             workflow: 'ubuntu-deb-bump.yml'
-            repo: '${{ github.repository_name }}'
+            repo: '${{ github.event.repository.name }}'
             branch: '${{ github.ref_name }}'
 
           - release: update-config
@@ -85,21 +84,9 @@ jobs:
             branch: 'main'
 
     steps:
-      - name: Print branch
-        run: echo "${{ matrix.branch }}"
-
-      - name: Print repo
-        run: echo "${{ matrix.repo }}"
-
-      - name: Print repository.name
-        run: echo "${{ github.event.repository.name }}"
-
-      - name: Print repository_name
-        run: echo "${{ github.event.repository_name }}"
-
       - name: Check if skip this dispatch job
         if: >
-          matrix.event == 'dispatch-test' && inputs.skip_test == true
+          matrix.release == 'test' && inputs.skip_test == true
         run: echo "skip=true" >> $GITHUB_ENV
 
       - uses: actions/checkout@v3

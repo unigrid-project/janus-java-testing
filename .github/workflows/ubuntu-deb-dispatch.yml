@@ -91,6 +91,12 @@ jobs:
       - name: Print repo
         run: echo "${{ matrix.repo }}"
 
+      - name: Print repository.name
+        run: echo "${{ github.event.repository.name }}"
+
+      - name: Print repository_name
+        run: echo "${{ github.event.repository_name }}"
+
       - name: Check if skip this dispatch job
         if: >
           matrix.event == 'dispatch-test' && inputs.skip_test == true

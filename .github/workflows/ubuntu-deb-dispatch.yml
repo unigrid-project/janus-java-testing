@@ -51,7 +51,7 @@ jobs:
 
           - release: set-version
             name: Set version & Remove snapshot
-            event: set-version
+            event: dispatch-set-version
             inputs: '{"target_module": "${{ inputs.target_module }}"}'
             check: 'Set version'
             workflow: 'ubuntu-deb-set-version.yml'

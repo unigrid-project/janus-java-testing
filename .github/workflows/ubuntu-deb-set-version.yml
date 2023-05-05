@@ -3,7 +3,7 @@ name: Set version & Remove snapshot
 on:
   repository_dispatch:
     types:
-    - set-version
+    - dispatch-set-version
   workflow_dispatch:
     inputs:
       distinct_id:

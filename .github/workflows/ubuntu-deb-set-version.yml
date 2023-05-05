@@ -3,7 +3,7 @@ name: Set version & Remove snapshot
 on:
   repository_dispatch:
     types:
-    - dispatch-set-version
+    - set-version
   workflow_dispatch:
     inputs:
       distinct_id:
@@ -16,7 +16,7 @@ on:
         - bootstrap
         - fx
       tag_name:
-        description: 'Version'
+        description: 'New version'
         required: true
       generate_backup_poms:
         type: boolean
@@ -70,8 +70,8 @@ jobs:
           fi
 
           mvn -f pom.xml versions:set -DremoveSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
-
-          export version=$(echo ${{ inputs.tag_name }} | cut -d v -f2 | cut -d "-" -f1)
+          export version="${{ inputs.tag_name }}"
+          export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
 
           for module in fx bootstrap desktop; do
             mvn -f $module/pom.xml versions:set -DremoveSnapshot=true -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}

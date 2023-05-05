@@ -78,7 +78,7 @@ jobs:
         run: |
           for module in fx desktop bootstrap; do
             export version=$(mvn -f $(echo $module)/pom.xml -q -DforceStdout help:evaluate -Dexpression=project.version)
-            export version=$(echo $version | cut -d v -f2 | awk -F. '{print $1"."$2"."$3+0}')
+            export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
 
             if [ "${{ inputs.bump }}" = "Major" ]; then
               export version=$(echo $version | awk -F. '{print $1+1".0.0"}')
@@ -92,7 +92,7 @@ jobs:
               if [ "${{ inputs.bump }}" = "Revision" ]; then
                 export version=$(echo $version | awk -F. '{print $1"."$2"."$3+1}')
               fi
-              export version_title=$version
+              echo "version_title=$version" >> $GITHUB_ENV
               mvn -f $module/pom.xml versions:set -DnewVersion=${version}${{ env.snapshot }} -DgenerateBackupPoms=${{ inputs.generate_backup_poms }} -DupdateMatchingVersions=${{ inputs.update_matching_versions }}
             fi
           done
@@ -107,4 +107,4 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Github actions - ${{ github.workflow }} - $version_title
+          commit_message: Github actions - ${{ github.workflow }} ${{ inputs.target_module }} ${{ env.version_title }}

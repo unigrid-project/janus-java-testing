@@ -38,6 +38,9 @@ jobs:
         with:
           maven-version: 3.8.6
 
+      - name: Requires config build
+        run: xvfb-run -a mvn -f config/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
+
       - name: Set parent tag
         run: |
           echo "parent_tag=v$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV

@@ -15,9 +15,6 @@ on:
         options:
         - bootstrap
         - fx
-      tag_name:
-        description: 'Tag name (vX.Y.Z)'
-        required: true
       skip_ubuntu:
         type: boolean
         description: Skip ubuntu, will skip upload artifacts files too
@@ -58,9 +55,6 @@ jobs:
         if: inputs.distinct_id != ''
         run: echo ${{ inputs.distinct_id }}
 
-      - name: Print os
-        run: echo "${{ runner.os }}"
-
       - uses: actions/checkout@v3
 
       - name: Output Inputs
@@ -80,11 +74,19 @@ jobs:
         with:
           maven-version: 3.8.6
 
+      - name: Get tag name
+        id: get_tag
+        run: echo "::set-output name=tag_name::$(git describe --tags --abbrev=0)"
+
+      - name: Print Tag
+        run: echo "The current checkout tag is ${{ steps.get_tag.outputs.tag_name }}"
+
       - name: Build images, configs and upload them
         if: matrix.skip != 'true' && inputs.target_module == 'bootstrap'
         shell: bash
         run: |
-          export version=$(echo ${{ inputs.tag_name }} | cut -d v -f2 | cut -d "${{ env.tag_delimeter }}" -f1)
+          export version="${{ steps.get_tag.outputs.tag_name }}"
+          export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
           if [[ "${{ runner.os }}" == 'Linux' ]]; then
             export filename_matcher="unigrid_${version}*amd64.deb"
             export filename="unigrid_${version}_amd64.deb"
@@ -122,7 +124,7 @@ jobs:
             codesign -vv -d $filename
           fi
 
-          gh release upload v${version}${{ env.tag_delimeter }}${{ inputs.target_module }} $filename --clobber
+          gh release upload ${{ steps.get_tag.outputs.tag_name }} $filename --clobber
 
           eval $additional_cmd
 
@@ -130,10 +132,11 @@ jobs:
         if: matrix.skip != 'true' && runner.os == 'Linux' && inputs.target_module == 'fx'
         shell: bash
         run: |
-          export version=$(echo ${{ inputs.tag_name }} | cut -c 2- | cut -d "${{ env.tag_delimeter }}" -f1)
+          export version="${{ steps.get_tag.outputs.tag_name }}"
+          export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
           mvn -f config/pom.xml install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
-          gh release upload v${version}${{ env.tag_delimeter }}${{ inputs.target_module }} fx/target/fx-$version.jar --clobber
+          gh release upload ${{ steps.get_tag.outputs.tag_name }} fx/target/fx-$version.jar --clobber
           mkdir -p artifacts
           rsync -av ${{ env.config_matchers }} artifacts
 

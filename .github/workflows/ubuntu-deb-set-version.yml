@@ -14,7 +14,7 @@ on:
         - fx
       tag_name:
         description: 'New version'
-        required: true
+        required: false
       generate_backup_poms:
         type: boolean
         description: Generate backup poms

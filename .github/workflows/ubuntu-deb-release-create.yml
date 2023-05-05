@@ -1,9 +1,6 @@
 name: Create release & tag
 
 on:
-  repository_dispatch:
-    types:
-    - dispatch-release
   workflow_dispatch:
     inputs:
       distinct_id:

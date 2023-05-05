@@ -1,9 +1,6 @@
 name: Test suite
 
 on:
-  repository_dispatch:
-    types:
-    - dispatch-test
   workflow_dispatch:
     inputs:
       distinct_id:

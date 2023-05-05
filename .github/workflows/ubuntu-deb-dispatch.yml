@@ -51,7 +51,6 @@ jobs:
 
           - release: set-version
             name: Set version & Remove snapshot
-            event: dispatch-set-version
             inputs: '{"target_module": "${{ inputs.target_module }}"}'
             check: 'Set version'
             workflow: 'ubuntu-deb-set-version.yml'
@@ -60,7 +59,6 @@ jobs:
 
           - release: create-release
             name: Create release & tag
-            event: dispatch-release
             inputs: '{"tag_name": "${{ inputs.tag_name }}-${{ inputs.target_module }}"}'
             check: 'Create release'
             workflow: 'ubuntu-deb-release-create.yml'
@@ -69,7 +67,6 @@ jobs:
 
           - release: upload
             name: Upload to release tag
-            event: dispatch-upload
             inputs: '{"target_module": "${{ inputs.target_module }}","skip_ubuntu": "false","skip_windows": "false","skip_macos": "false"}'
             check: 'Upload to release'
             workflow: 'upload.yml'
@@ -78,7 +75,6 @@ jobs:
 
           - release: bump
             name: Bump version
-            event: dispatch-bump
             inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}"}'
             check: 'Bump'
             workflow: 'ubuntu-deb-bump.yml'
@@ -87,7 +83,6 @@ jobs:
 
           - release: update-config
             name: Update config files
-            event: dispatch-update-config
             check: 'Update config'
             workflow: 'ubuntu-deb-update-config.yml'
             repo: '${{ inputs.update_repo }}'
@@ -96,6 +91,9 @@ jobs:
     steps:
       - name: Print branch
         run: echo "${{ matrix.branch }}"
+
+      - name: Print repo
+        run: echo "${{ matrix.repo }}"
 
       - name: Check if skip this dispatch job
         if: >

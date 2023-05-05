@@ -1,9 +1,6 @@
 name: Bump version
 
 on:
-  repository_dispatch:
-    types:
-    - dispatch-bump
   workflow_dispatch:
     inputs:
       distinct_id:

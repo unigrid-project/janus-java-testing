@@ -1,9 +1,6 @@
 name: Upload to release tag
 
 on:
-  repository_dispatch:
-    types:
-    - dispatch-upload
   workflow_dispatch:
     inputs:
       distinct_id:

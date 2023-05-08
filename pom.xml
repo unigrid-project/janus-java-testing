@@ -54,7 +54,6 @@
 						<tagNameFormat>v@{project.version}</tagNameFormat>
 						<allowTimestampedSnapshots>true</allowTimestampedSnapshots>
 						<autoResolveSnapshots>4</autoResolveSnapshots>
-						<autoResolveSnapshots>1</autoResolveSnapshots>
 						<autoVersionSubmodules>false</autoVersionSubmodules>
 						<suppressCommitBeforeTag>${suppressCommitBeforeTag}</suppressCommitBeforeTag>
 						<remoteTagging>false</remoteTagging>

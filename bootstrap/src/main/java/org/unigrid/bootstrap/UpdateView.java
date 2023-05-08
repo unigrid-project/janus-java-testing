@@ -13,6 +13,7 @@
 	You should have received an addended copy of the GNU Affero General Public License with this program.
 	If not, see <http://www.gnu.org/licenses/> and <https://github.com/unigrid-project/janus-java>.
  */
+
 package org.unigrid.bootstrap;
 
 import io.sentry.Sentry;
@@ -95,7 +96,11 @@ public class UpdateView implements UpdateHandler, Injectable, Initializable {
 		return primaryStage;
 	}
 
-	public void setConfig(Configuration config, Stage primaryStage, Map<String, String> input, HostServices hostServices) {
+	public void setConfig(
+		Configuration config,
+		Stage primaryStage,
+		Map<String, String> input,
+		HostServices hostServices) {
 		this.config = config;
 		this.primaryStage = primaryStage;
 		final Properties properties = new Properties();
@@ -111,11 +116,11 @@ public class UpdateView implements UpdateHandler, Injectable, Initializable {
 
 		inject = new Injectable() {
 			@InjectSource
-			Map<String, String> inputArgs = input;
+			private Map<String, String> inputArgs = input;
 			@InjectSource
-			HostServices hostService = hostServices;
+			private HostServices hostService = hostServices;
 			@InjectSource
-			String bootstrapVer = bootstrapVersion;
+			private String bootstrapVer = bootstrapVersion;
 		};
 
 		System.out.println(input.get("URL"));
@@ -171,7 +176,7 @@ public class UpdateView implements UpdateHandler, Injectable, Initializable {
 
 		checkUpdates.setOnSucceeded(evt -> {
 			if (!checkUpdates.getValue()) {
-				if(!daemonDirExists()) {
+				if (!daemonDirExists()) {
 					extractDaemon();
 				}
 				progress.setProgress(1);
@@ -194,7 +199,7 @@ public class UpdateView implements UpdateHandler, Injectable, Initializable {
 							System.out.println("Do the install");
 							Archive.read(zip).install(true);
 							System.out.println("Install done!!");
-							if(!daemonDirExists()) {
+							if (!daemonDirExists()) {
 								extractDaemon();
 							}
 							synchronized (launchTrigger) {
@@ -354,7 +359,7 @@ public class UpdateView implements UpdateHandler, Injectable, Initializable {
 
 			final Process process = pb.start();
 
-			try ( var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+			try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
 				String line;
 
 				while ((line = reader.readLine()) != null) {
@@ -380,7 +385,7 @@ public class UpdateView implements UpdateHandler, Injectable, Initializable {
 				);
 			}
 			final Process process = pb.start();
-			try ( var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+			try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
 				String line;
 
 				while ((line = reader.readLine()) != null) {
@@ -423,7 +428,7 @@ public class UpdateView implements UpdateHandler, Injectable, Initializable {
 	public static void unzipFolder(Path source, Path target) throws IOException {
 		final Path endDir = Paths.get(startLoacation + "/bin");
 
-		try ( ZipInputStream zis = new ZipInputStream(new FileInputStream(source.toFile()))) {
+		try (ZipInputStream zis = new ZipInputStream(new FileInputStream(source.toFile()))) {
 			ZipEntry zipEntry = zis.getNextEntry();
 
 			while (zipEntry != null) {
@@ -488,15 +493,15 @@ public class UpdateView implements UpdateHandler, Injectable, Initializable {
 	public static String getBaseDirectory() {
 		final String blockRoot = System.getProperty("user.home").concat(
 			switch (OS.CURRENT) {
-			case LINUX ->
-				"/.unigrid/dependencies";
-			case WINDOWS ->
-				"/AppData/Roaming/UNIGRID/dependencies";
-			case MAC ->
-				"/Library/Application Support/UNIGRID/dependencies";
-			default ->
-				"/UNIGRID/dependencies";
-		}
+				case LINUX ->
+					"/.unigrid/dependencies";
+				case WINDOWS ->
+					"/AppData/Roaming/UNIGRID/dependencies";
+				case MAC ->
+					"/Library/Application Support/UNIGRID/dependencies";
+				default ->
+					"/UNIGRID/dependencies";
+			}
 		);
 
 		File depenendencies = new File(blockRoot);

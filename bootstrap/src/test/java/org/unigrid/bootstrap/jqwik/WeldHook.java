@@ -122,7 +122,7 @@ public class WeldHook implements AroundContainerHook, AroundPropertyHook {
 	private Object inject(PropertyLifecycleContext context, Type type, Field field, String containerSuffix) {
 		final String name = context.containerClass().getSimpleName() + containerSuffix;
 		final WeldContainer instance = createOrGetWeld(name, context);
-		NamedCDIProvider.getNameReference().set(name);
+		NamedCDIProvider.NAMEREFERENCE.set(name);
 
 		try {
 			final Object obj = instance.select(type).get();

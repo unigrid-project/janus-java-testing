@@ -63,13 +63,14 @@ public class App extends Application implements Delegate {
 
 		URL configUrl = null;
 		OS os = OS.CURRENT;
+		String urlPart = "https://raw.githubusercontent.com/unigrid-project/unigrid-update/main/";
 		if (!inputArgs.containsKey("URL")) {
 			if (os.equals(OS.LINUX)) {
-				configUrl = new URL("https://raw.githubusercontent.com/unigrid-project/unigrid-update/main/config-linux.xml");
+				configUrl = new URL(urlPart + "config-linux.xml");
 			} else if (os.equals(OS.WINDOWS)) {
-				configUrl = new URL("https://raw.githubusercontent.com/unigrid-project/unigrid-update/main/config-windows.xml");
+				configUrl = new URL(urlPart + "config-windows.xml");
 			} else if (os.equals(OS.MAC)) {
-				configUrl = new URL("https://raw.githubusercontent.com/unigrid-project/unigrid-update/main/config-mac.xml");
+				configUrl = new URL(urlPart + "config-mac.xml");
 			}
 		} else {
 			configUrl = new URL(inputArgs.get("URL"));
@@ -78,13 +79,15 @@ public class App extends Application implements Delegate {
 
 		Configuration config = null;
 
-		try ( Reader in = new InputStreamReader(configUrl.openStream(), StandardCharsets.UTF_8)) {
+		try (Reader in = new InputStreamReader(configUrl.openStream(), StandardCharsets.UTF_8)) {
 			System.out.println("are we getting here??????");
 			config = Configuration.read(in);
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 			Sentry.captureException(e);
-			try ( Reader in = Files.newBufferedReader(Paths.get(System.getProperty("user.home"), "/work/janus-java/config/target/config.xml"))) {
+			try (Reader in = Files.newBufferedReader(Paths.get(
+				System.getProperty("user.home"), "/work/janus-java/config/target/config.xml")
+			)) {
 				System.out.println("reading local config xml");
 				config = Configuration.read(in);
 			}
@@ -94,7 +97,9 @@ public class App extends Application implements Delegate {
 			String server = "";
 			final String version = config.getProperties("fx.version").get(0).getValue();
 			Sentry.init(options -> {
-				options.setDsn("https://18a30d2bf41643ce9efe84a451ecef1a@o266736.ingest.sentry.io/6632466");
+				options.setDsn(
+					"https://18a30d2bf41643ce9efe84a451ecef1a@o266736.ingest.sentry.io/6632466"
+				);
 				// Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
 				// We recommend adjusting this value in production.
 				options.setServerName(cryptCompName());

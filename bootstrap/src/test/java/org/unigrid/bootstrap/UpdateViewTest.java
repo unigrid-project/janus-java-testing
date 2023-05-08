@@ -23,7 +23,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -47,7 +46,7 @@ public class UpdateViewTest extends BaseMockedWeldTest {
 	private UpdateView updateView;
 
 	@Mocked
-	Stage primaryStage;
+	private Stage primaryStage;
 
 	@Example
 	public boolean shouldDownloadDependencies() throws IOException {

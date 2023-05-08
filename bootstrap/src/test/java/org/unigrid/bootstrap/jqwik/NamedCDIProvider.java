@@ -24,15 +24,15 @@ import lombok.Getter;
 import org.jboss.weld.environment.se.WeldContainer;
 
 public class NamedCDIProvider implements CDIProvider {
-	@Getter private static final AtomicReference<String> nameReference = new AtomicReference<>();
+	@Getter public static final AtomicReference<String> NAMEREFERENCE = new AtomicReference<>();
 
 	@Override
 	public CDI<Object> getCDI() {
-		if (Objects.isNull(nameReference.get())) {
+		if (Objects.isNull(NAMEREFERENCE.get())) {
 			throw new IllegalStateException("No namespace set for requested CDI instance");
 		}
 
-		return WeldContainer.instance(nameReference.get());
+		return WeldContainer.instance(NAMEREFERENCE.get());
 	}
 
 	@Override

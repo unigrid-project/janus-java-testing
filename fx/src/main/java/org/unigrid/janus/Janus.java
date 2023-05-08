@@ -121,7 +121,7 @@ public class Janus extends BaseApplication implements PropertyChangeListener {
 			AlertDialog.open(AlertType.ERROR, e.getMessage());
 		}
 		try {
-			
+
 			daemon.start();
 		} catch (Exception e) {
 			AlertDialog.open(AlertType.ERROR, e.getMessage());

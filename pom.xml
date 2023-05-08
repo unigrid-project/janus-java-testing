@@ -5,7 +5,7 @@
 	<artifactId>parent</artifactId>
 	<version>1.0.23-SNAPSHOT</version>
 	<properties>
-		<release.suppressCommitBeforeTag>false</release.suppressCommitBeforeTag>
+		<x.suppressCommitBeforeTag>false</x.suppressCommitBeforeTag>
 	</properties>
 	<packaging>pom</packaging>
 	<name>Unigrid Janus Parent</name>

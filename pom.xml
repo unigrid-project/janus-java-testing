@@ -4,6 +4,9 @@
 	<groupId>org.unigrid.janus</groupId>
 	<artifactId>parent</artifactId>
 	<version>1.0.23-SNAPSHOT</version>
+	<properties>
+		<autoVersionSubmodules>false</autoVersionSubmodules>
+	</properties>
 	<packaging>pom</packaging>
 	<name>Unigrid Janus Parent</name>
 	<organization>
@@ -50,7 +53,6 @@
 					<configuration>
 						<tagNameFormat>v@{project.version}</tagNameFormat>
 						<allowTimestampedSnapshots>true</allowTimestampedSnapshots>
-						<autoVersionSubmodules>false</autoVersionSubmodules>
 						<remoteTagging>false</remoteTagging>
 						<excludes>
 							<exclude>org.unigrid.janus:updateconfig</exclude>

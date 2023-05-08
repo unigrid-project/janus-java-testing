@@ -4,10 +4,6 @@
 	<groupId>org.unigrid.janus</groupId>
 	<artifactId>parent</artifactId>
 	<version>1.0.23-SNAPSHOT</version>
-	<properties>
-		<suppressCommitBeforeTag>true</suppressCommitBeforeTag>
-		<remoteTagging>false</remoteTagging>
-	</properties>
 	<packaging>pom</packaging>
 	<name>Unigrid Janus Parent</name>
 	<organization>
@@ -56,6 +52,8 @@
 						<allowTimestampedSnapshots>true</allowTimestampedSnapshots>
 						<autoResolveSnapshots>4</autoResolveSnapshots>
 						<autoVersionSubmodules>false</autoVersionSubmodules>
+						<suppressCommitBeforeTag>true</suppressCommitBeforeTag>
+						<remoteTagging>false</remoteTagging>
 						<excludes>
 							<exclude>org.unigrid.janus:updateconfig</exclude>
 						</excludes>

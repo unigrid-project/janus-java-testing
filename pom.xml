@@ -51,7 +51,6 @@
 						<tagNameFormat>v@{project.version}</tagNameFormat>
 						<allowTimestampedSnapshots>true</allowTimestampedSnapshots>
 						<autoVersionSubmodules>false</autoVersionSubmodules>
-						<suppressCommitBeforeTag>true</suppressCommitBeforeTag>
 						<remoteTagging>false</remoteTagging>
 						<excludes>
 							<exclude>org.unigrid.janus:updateconfig</exclude>

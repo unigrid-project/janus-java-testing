@@ -5,7 +5,7 @@
 	<artifactId>parent</artifactId>
 	<version>1.0.23-SNAPSHOT</version>
 	<properties>
-		<suppressCommitBeforeTag>false</suppressCommitBeforeTag>
+		<release.test>false</release.test>
 	</properties>
 	<packaging>pom</packaging>
 	<name>Unigrid Janus Parent</name>
@@ -55,7 +55,7 @@
 						<allowTimestampedSnapshots>true</allowTimestampedSnapshots>
 						<autoResolveSnapshots>4</autoResolveSnapshots>
 						<autoVersionSubmodules>false</autoVersionSubmodules>
-						<suppressCommitBeforeTag>${suppressCommitBeforeTag}</suppressCommitBeforeTag>
+						<suppressCommitBeforeTag>${release.test}</suppressCommitBeforeTag>
 						<remoteTagging>false</remoteTagging>
 						<excludes>
 							<exclude>org.unigrid.janus:updateconfig</exclude>

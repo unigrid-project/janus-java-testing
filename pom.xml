@@ -5,8 +5,7 @@
 	<artifactId>parent</artifactId>
 	<version>1.0.23-SNAPSHOT</version>
 	<properties>
-		<release.suppressCommitBeforeTag>false</release.suppressCommitBeforeTag>
-		<release.version></release.version>
+		<suppressCommitBeforeTag>false</suppressCommitBeforeTag>
 	</properties>
 	<packaging>pom</packaging>
 	<name>Unigrid Janus Parent</name>
@@ -52,13 +51,12 @@
 					<artifactId>maven-release-plugin</artifactId>
 					<version>3.0.0</version>
 					<configuration>
-						<releaseVersion>${release.version}</releaseVersion>
 						<tagNameFormat>v@{project.version}</tagNameFormat>
 						<allowTimestampedSnapshots>true</allowTimestampedSnapshots>
 						<autoResolveSnapshots>4</autoResolveSnapshots>
 						<autoResolveSnapshots>1</autoResolveSnapshots>
 						<autoVersionSubmodules>false</autoVersionSubmodules>
-						<suppressCommitBeforeTag>${release.suppressCommitBeforeTag}</suppressCommitBeforeTag>
+						<suppressCommitBeforeTag>${suppressCommitBeforeTag}</suppressCommitBeforeTag>
 						<remoteTagging>false</remoteTagging>
 						<excludes>
 							<exclude>org.unigrid.janus:updateconfig</exclude>

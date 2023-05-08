@@ -50,6 +50,9 @@
 					<configuration>
 						<tagNameFormat>v@{project.version}</tagNameFormat>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
+						<excludes>
+							<exclude>org.unigrid.janus:updateconfig</exclude>
+						</excludes>
 						<dryRun>${dryRun}</dryRun>
 						<preparationGoals />
 						<pushChanges>false</pushChanges>

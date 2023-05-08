@@ -49,7 +49,8 @@
 					<version>3.0.0</version>
 					<configuration>
 						<tagNameFormat>v@{project.version}</tagNameFormat>
-						<autoVersionSubmodules>true</autoVersionSubmodules>
+						<autoVersionSubmodules>false</autoVersionSubmodules>
+						<suppressCommitBeforeTag>true</suppressCommitBeforeTag>
 						<excludes>
 							<exclude>org.unigrid.janus:updateconfig</exclude>
 						</excludes>

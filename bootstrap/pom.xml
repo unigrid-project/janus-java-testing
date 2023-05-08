@@ -100,11 +100,8 @@
                                 <artifactId>maven-release-plugin</artifactId>
                                 <version>3.0.0</version>
                                 <configuration>
-                                        <tagNameFormat>v@{project.version}-bootstrap</tagNameFormat>
-                                        <autoResolveSnapshots>4</autoResolveSnapshots>
-                                        <autoResolveSnapshots>1</autoResolveSnapshots>
+                                        <tagNameFormat>v@{project.version}-@{project.artifactId}</tagNameFormat>
                                         <autoVersionSubmodules>false</autoVersionSubmodules>
-                                        <suppressCommitBeforeTag>true</suppressCommitBeforeTag>
                                         <remoteTagging>false</remoteTagging>
                                         <dryRun>${dryRun}</dryRun>
                                         <pushChanges>false</pushChanges>

@@ -328,14 +328,9 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<version>3.0.0</version>
 				<configuration>
-					<tagNameFormat>v@{project.version}-fx</tagNameFormat>
-					<autoResolveSnapshots>4</autoResolveSnapshots>
+					<tagNameFormat>v@{project.version}-@{project.artifactId}</tagNameFormat>
 					<autoVersionSubmodules>false</autoVersionSubmodules>
-					<suppressCommitBeforeTag>true</suppressCommitBeforeTag>
 					<remoteTagging>false</remoteTagging>
-					<excludes>
-							<exclude>org.unigrid.janus:updateconfig</exclude>
-					</excludes>
 					<dryRun>${dryRun}</dryRun>
 					<pushChanges>false</pushChanges>
 					<scmDevelopmentCommitComment>@{prefix} Prepare for next development iteration</scmDevelopmentCommitComment>

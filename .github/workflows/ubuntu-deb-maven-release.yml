@@ -83,12 +83,17 @@ jobs:
             xvfb-run -a mvn -B build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0${{ env.snapshot }} -DgenerateBackupPoms=false
           fi
 
-          xvfb-run -a mvn -B release:prepare -Darguments=${{ env.arguments }} -DautoVersionSubmodules=true -DpushChanges=true -DgenerateReleasePoms=false
+          xvfb-run -a mvn -B release:prepare -Darguments=${{ env.arguments }} -DautoVersionSubmodules=true -DgenerateReleasePoms=false
+          git push --tags
+
           export latest_tag=$(git tag --sort=-version:refname | head -n1)
           export second_latest_commit=$(git show --no-patch --format="%H" HEAD~1)
-          git tag $latest_tag $second_latest_commit
+          git tag ${latest_tag}-fx $second_latest_commit
+          git tag ${latest_tag}-bootstrap $second_latest_commit
+          git push --tags
 
       - name: Bump Revision
         if: inputs.bump == 'Revision'
         run: |
-          xvfb-run -a mvn -X -B release:prepare -Darguments=${{ env.arguments }} -Dmodule=${{ inputs.target_module }} -DautoVersionSubmodules=false -DpushChanges=true -DgenerateReleasePoms=false
+          xvfb-run -a mvn -X -B release:prepare -Darguments=${{ env.arguments }} -Dmodule=${{ inputs.target_module }} -DautoVersionSubmodules=false -DgenerateReleasePoms=false
+          git push --tags

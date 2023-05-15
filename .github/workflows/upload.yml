@@ -12,6 +12,13 @@ on:
         options:
         - bootstrap
         - fx
+      bump:
+        description: 'Bump version'
+        type: choice
+        options:
+        - Revision
+        - Minor
+        - Major
       skip_ubuntu:
         type: boolean
         description: Skip ubuntu, will skip upload artifacts files too

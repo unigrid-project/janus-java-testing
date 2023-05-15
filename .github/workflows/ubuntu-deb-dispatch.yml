@@ -34,7 +34,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        release: ['maven-release-tag', 'create-release', 'upload', 'update-config']
+        release: ['maven-release-tag', 'release-create', 'upload', 'update-config']
         include:
           - release: maven-release-tag
             name: Maven release tag
@@ -44,7 +44,7 @@ jobs:
             repo: '${{ github.event.repository.name }}'
             branch: '${{ github.ref_name }}'
 
-          - release: Release create
+          - release: release-create
             name: Release create
             inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}"}'
             check: 'Create release'

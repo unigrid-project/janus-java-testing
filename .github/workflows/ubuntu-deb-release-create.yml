@@ -1,4 +1,4 @@
-name: Create release & tag
+name: Release create
 
 on:
   workflow_dispatch:
@@ -52,7 +52,7 @@ jobs:
       - name: Requires config build
         run: xvfb-run -a mvn -f config/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
 
-      - name: Set parent tag
+      - name: Create release on Minor or Major bump
         if: inputs.bump != 'Revision'
         run: |
           $(git tag --list --sort=-version:refname "v*-*" | head -n 1)
@@ -61,15 +61,17 @@ jobs:
             gh release create "$tag" -d -p -t "$tag" --generate-notes
           done
 
-      - name: Set parent tag
+      - name: Set env for Revision bump
         if: inputs.bump == 'Revision'
         run: |
-          echo "tag_name=v$(mvn -f $(echo ${{ inputs.target_module }})/pom.xml -q -DforceStdout help:evaluate -Dexpression=project.version)${{ env.tag_delimeter }}${{ inputs.target_module }}" >> $GITHUB_ENV
+          echo "tag_name=$(git tag --sort=-version:refname | head -n1)" >> $GITHUB_ENV
+          echo "second_latest_commit=$(git show --no-patch --format="%H" HEAD~1)" >> $GITHUB_ENV
 
       - uses: ncipollo/release-action@v1
-        name: Release tag
+        name: Revision release
         with:
           name: ${{ env.tag_name }}
           tag: ${{ env.tag_name }}
+          commit: ${{ env.second_latest_commit }}
           generateReleaseNotes: true
           draft: true

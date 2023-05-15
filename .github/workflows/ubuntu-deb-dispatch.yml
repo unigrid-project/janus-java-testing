@@ -44,8 +44,8 @@ jobs:
             repo: '${{ github.event.repository.name }}'
             branch: '${{ github.ref_name }}'
 
-          - release: create-release
-            name: Create release & tag
+          - release: Release create
+            name: Release create
             inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}"}'
             check: 'Create release'
             workflow: 'ubuntu-deb-release-create.yml'

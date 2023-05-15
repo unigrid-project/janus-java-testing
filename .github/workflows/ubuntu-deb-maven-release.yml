@@ -61,6 +61,9 @@ jobs:
         if: inputs.skip_test == true
         run: echo "arguments=$(echo -Dcheckstyle.skip -Dmaven.test.skip=true)" >> $GITHUB_ENV
 
+      - name: Requires config build
+        run: mvn -f config/pom.xml install $arguments
+
       - name: Bump Minor or Major
         if: inputs.distinct_id != 'Revision'
         run: |

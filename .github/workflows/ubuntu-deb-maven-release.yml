@@ -1,4 +1,4 @@
-name: Maven release
+name: Maven release tag
 
 on:
   workflow_dispatch:
@@ -29,10 +29,12 @@ env:
   skip_bootstrap: ${{ inputs.skip_bootstrap }}
   skip_desktop: ${{ inputs.skip_desktop }}
   snapshot: "-SNAPSHOT"
+  username: 'Github Actions'
+  email: 'actions@github.com'
 
 jobs:
-  maven-release:
-    name: Release
+  release-tag:
+    name: Release tag
     runs-on: ubuntu-latest
     permissions: write-all
 
@@ -57,28 +59,36 @@ jobs:
         with:
           maven-version: 3.8.6
 
+      - name: Push pom files to master
+        run: |
+          git config --global user.name ${{ env.username }}
+          git config --global user.email ${{ env.email }}
+
       - name: Set arguments for skip test
         if: inputs.skip_test == true
         run: echo "arguments=$(echo -Dcheckstyle.skip -Dmaven.test.skip=true)" >> $GITHUB_ENV
 
       - name: Requires config build
-        run: mvn -f config/pom.xml install $arguments
+        run: xvfb-run -a mvn -f config/pom.xml install ${{ env.arguments }}
+
+      - name: Requires release build
+        run: xvfb-run -a mvn -f release/pom.xml install ${{ env.arguments }}
 
       - name: Bump Minor or Major
-        if: inputs.distinct_id != 'Revision'
+        if: inputs.bump != 'Revision'
         run: |
           if [ "${{ inputs.bump }}" = "Major" ]; then
-            export newVersion="\${parsedVersion.nextMajorVersion}.0.0-Snapshot"
+            xvfb-run -a mvn -B build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0${{ env.snapshot }} -DgenerateBackupPoms=false
           elif [ "${{ inputs.bump }}" = "Minor" ]; then
-            export newVersion="\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0-Snapshot"
+            xvfb-run -a mvn -B build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0${{ env.snapshot }} -DgenerateBackupPoms=false
           fi
 
-          mvn -B build-helper:parse-version versions:set -DnewVersion=$newVersion -DgenerateBackupPoms=false
-          mvn -B release:prepare -DgenerateReleasePoms=false
-          mvn -X -B release:perform
+          xvfb-run -a mvn -B release:prepare -Darguments=${{ env.arguments }} -DautoVersionSubmodules=true -DpushChanges=true -DgenerateReleasePoms=false
+          export latest_tag=$(git tag --sort=-version:refname | head -n1)
+          export second_latest_commit=$(git show --no-patch --format="%H" HEAD~1)
+          git tag $latest_tag $second_latest_commit
 
       - name: Bump Revision
-        if: inputs.distinct_id == 'Revision'
+        if: inputs.bump == 'Revision'
         run: |
-          mvn -X -B release:prepare -Darguments=$arguments -Dmodule=${{ inputs.target_module }} -DautoVersionSubmodules=false -DgenerateBackupPoms=false
-          mvn -X -B release:perform
+          xvfb-run -a mvn -X -B release:prepare -Darguments=${{ env.arguments }} -Dmodule=${{ inputs.target_module }} -DautoVersionSubmodules=false -DpushChanges=true -DgenerateReleasePoms=false

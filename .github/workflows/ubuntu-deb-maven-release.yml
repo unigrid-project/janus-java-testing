@@ -1,0 +1,81 @@
+name: Maven release
+
+on:
+  workflow_dispatch:
+    inputs:
+      distinct_id:
+        type: string
+        description: 'distinct_id used by return-dispatch'
+      target_module:
+        description: 'Target module'
+        type: choice
+        options:
+        - bootstrap
+        - fx
+      bump:
+        description: 'Bump version'
+        type: choice
+        options:
+        - Revision
+        - Minor
+        - Major
+      skip_test:
+        type: boolean
+        description: Skip test
+        default: false
+
+env:
+  skip_fx: ${{ inputs.skip_fx }}
+  skip_bootstrap: ${{ inputs.skip_bootstrap }}
+  skip_desktop: ${{ inputs.skip_desktop }}
+  snapshot: "-SNAPSHOT"
+
+jobs:
+  maven-release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - name: echo distinct ID ${{ inputs.distinct_id }}
+        if: inputs.distinct_id != ''
+        run: echo ${{ inputs.distinct_id }}
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.6
+
+      - name: Set arguments for skip test
+        if: inputs.skip_test == true
+        run: echo "arguments=$(echo -Dcheckstyle.skip -Dmaven.test.skip=true)" >> $GITHUB_ENV
+
+      - name: Bump Minor or Major
+        if: inputs.distinct_id != 'Revision'
+        run: |
+          if [ "${{ inputs.bump }}" = "Major" ]; then
+            export newVersion="\${parsedVersion.nextMajorVersion}.0.0-Snapshot"
+          elif [ "${{ inputs.bump }}" = "Minor" ]; then
+            export newVersion="\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0-Snapshot"
+          fi
+
+          mvn -B build-helper:parse-version versions:set -DnewVersion=$newVersion -DgenerateBackupPoms=false
+          mvn -B release:prepare -DgenerateReleasePoms=false
+          mvn -X -B release:perform
+
+      - name: Bump Revision
+        if: inputs.distinct_id == 'Revision'
+        run: |
+          mvn -X -B release:prepare -Darguments=$arguments -Dmodule=${{ inputs.target_module }} -DautoVersionSubmodules=false -DgenerateBackupPoms=false
+          mvn -X -B release:perform

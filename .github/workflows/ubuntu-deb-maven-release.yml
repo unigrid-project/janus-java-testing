@@ -84,6 +84,7 @@ jobs:
           fi
 
           xvfb-run -a mvn -B release:prepare -Darguments="${{ env.arguments }}" -DautoVersionSubmodules=true -DgenerateReleasePoms=false
+          git fetch
           git push
           git push --tags
 

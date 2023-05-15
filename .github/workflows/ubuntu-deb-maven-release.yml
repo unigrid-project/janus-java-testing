@@ -84,6 +84,7 @@ jobs:
           fi
 
           xvfb-run -a mvn -B release:prepare -Darguments=${{ env.arguments }} -DautoVersionSubmodules=true -DgenerateReleasePoms=false
+          git push
           git push --tags
 
           export latest_tag=$(git tag --sort=-version:refname | head -n1)

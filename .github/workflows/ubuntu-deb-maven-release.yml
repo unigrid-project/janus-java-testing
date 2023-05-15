@@ -84,7 +84,6 @@ jobs:
           fi
 
           xvfb-run -a mvn -B release:prepare -Darguments="${{ env.arguments }}" -DautoVersionSubmodules=true -DgenerateReleasePoms=false
-          git fetch
           git push
           git push --tags
 
@@ -98,4 +97,5 @@ jobs:
         if: inputs.bump == 'Revision'
         run: |
           xvfb-run -a mvn -X -B release:prepare -Darguments="${{ env.arguments }}" -Dmodule=${{ inputs.target_module }} -DautoVersionSubmodules=false -DgenerateReleasePoms=false
+          git push
           git push --tags

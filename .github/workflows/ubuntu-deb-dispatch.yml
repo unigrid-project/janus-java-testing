@@ -34,27 +34,19 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        release: ['test', 'set-version', 'create-release', 'upload', 'bump', 'update-config']
+        release: ['maven-release-tag', 'create-release', 'upload', 'update-config']
         include:
           - release: test
-            name: Test suite
-            inputs: '{"skip_fx": "false","skip_bootstrap": "false","skip_desktop": "false","skip_config": "false","skip_checkstyle": "false"}'
-            check: 'Maven test'
-            workflow: 'ubuntu-deb-test-suite.yml'
-            repo: '${{ github.event.repository.name }}'
-            branch: '${{ github.ref_name }}'
-
-          - release: set-version
-            name: Set version & Remove snapshot
-            inputs: '{"target_module": "${{ inputs.target_module }}"}'
-            check: 'Set version'
-            workflow: 'ubuntu-deb-set-version.yml'
+            name: Maven release tag
+            inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}","skip_test": "${{ inputs.skip_test }}"}'
+            check: 'Release tag'
+            workflow: 'ubuntu-deb-maven-release.yml'
             repo: '${{ github.event.repository.name }}'
             branch: '${{ github.ref_name }}'
 
           - release: create-release
             name: Create release & tag
-            inputs: '{"target_module": "${{ inputs.target_module }}"}'
+            inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}"}'
             check: 'Create release'
             workflow: 'ubuntu-deb-release-create.yml'
             repo: '${{ github.event.repository.name }}'
@@ -62,17 +54,9 @@ jobs:
 
           - release: upload
             name: Upload to release tag
-            inputs: '{"target_module": "${{ inputs.target_module }}","skip_ubuntu": "false","skip_windows": "false","skip_macos": "false"}'
+            inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}","skip_ubuntu": "false","skip_windows": "false","skip_macos": "false"}'
             check: 'Upload to release'
             workflow: 'upload.yml'
-            repo: '${{ github.event.repository.name }}'
-            branch: '${{ github.ref_name }}'
-
-          - release: bump
-            name: Bump version
-            inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}"}'
-            check: 'Bump'
-            workflow: 'ubuntu-deb-bump.yml'
             repo: '${{ github.event.repository.name }}'
             branch: '${{ github.ref_name }}'
 
@@ -84,16 +68,9 @@ jobs:
             branch: 'main'
 
     steps:
-      - name: Check if skip this dispatch job
-        if: >
-          matrix.release == 'test' && inputs.skip_test == true
-        run: echo "skip=true" >> $GITHUB_ENV
-
       - uses: actions/checkout@v3
-        if: env.skip != 'true'
 
       - name: Dispatch an action and get the run ID
-        if: env.skip != 'true'
         uses: codex-/return-dispatch@v1
         id: return_dispatch
         with:
@@ -106,7 +83,6 @@ jobs:
           workflow_timeout_seconds: 120
 
       - name: Await Run ID ${{ steps.return_dispatch.outputs.run_id }}
-        if: env.skip != 'true'
         uses: Codex-/await-remote-run@v1.0.0
         with:
           token: ${{ secrets.ACTION_PAT }}

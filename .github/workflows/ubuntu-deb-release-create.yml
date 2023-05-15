@@ -12,9 +12,17 @@ on:
         options:
         - bootstrap
         - fx
+      bump:
+        description: 'Bump version'
+        type: choice
+        options:
+        - Revision
+        - Minor
+        - Major
 
 env:
   tag_delimeter: '-'
+  GH_TOKEN: ${{ secrets.ACTION_PAT }}
 
 jobs:
   create-release:
@@ -45,23 +53,18 @@ jobs:
         run: xvfb-run -a mvn -f config/pom.xml install -Dcheckstyle.skip -Dmaven.test.skip=true
 
       - name: Set parent tag
+        if: inputs.bump != 'Revision'
         run: |
-          echo "tag_parent=v$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          $(git tag --list --sort=-version:refname "v*-*" | head -n 1)
+          for tag in $(git tag --list --sort=-version:refname "v*-*" | head -n 1); do
+            echo "$tag"
+            gh release create "$tag" -d -p -t "$tag" --generate-notes
+          done
+
+      - name: Set parent tag
+        if: inputs.bump == 'Revision'
+        run: |
           echo "tag_name=v$(mvn -f $(echo ${{ inputs.target_module }})/pom.xml -q -DforceStdout help:evaluate -Dexpression=project.version)${{ env.tag_delimeter }}${{ inputs.target_module }}" >> $GITHUB_ENV
-
-      - uses: rickstaa/action-create-tag@v1
-        name: Create tag
-        with:
-          tag: ${{ env.tag_name }}
-          tag_exists_error: false
-          message: "Tag created by github action"
-
-      - uses: rickstaa/action-create-tag@v1
-        name: Create parent tag
-        with:
-          tag: ${{ env.tag_parent }}
-          tag_exists_error: false
-          message: "Tag created by github action"
 
       - uses: ncipollo/release-action@v1
         name: Release tag

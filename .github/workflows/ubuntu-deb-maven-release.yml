@@ -66,7 +66,7 @@ jobs:
 
       - name: Set arguments for skip test
         if: inputs.skip_test == true
-        run: echo "arguments=$(echo -Dcheckstyle.skip -Dmaven.test.skip=true)" >> $GITHUB_ENV
+        run: echo "arguments=-Dcheckstyle.skip -Dmaven.test.skip=true" >> $GITHUB_ENV
 
       - name: Requires config build
         run: xvfb-run -a mvn -f config/pom.xml install ${{ env.arguments }}
@@ -83,7 +83,7 @@ jobs:
             xvfb-run -a mvn -B build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0${{ env.snapshot }} -DgenerateBackupPoms=false
           fi
 
-          xvfb-run -a mvn -B release:prepare -Darguments=${{ env.arguments }} -DautoVersionSubmodules=true -DgenerateReleasePoms=false
+          xvfb-run -a mvn -B release:prepare -Darguments="${{ env.arguments }}" -DautoVersionSubmodules=true -DgenerateReleasePoms=false
           git push
           git push --tags
 
@@ -96,5 +96,5 @@ jobs:
       - name: Bump Revision
         if: inputs.bump == 'Revision'
         run: |
-          xvfb-run -a mvn -X -B release:prepare -Darguments=${{ env.arguments }} -Dmodule=${{ inputs.target_module }} -DautoVersionSubmodules=false -DgenerateReleasePoms=false
+          xvfb-run -a mvn -X -B release:prepare -Darguments="${{ env.arguments }}" -Dmodule=${{ inputs.target_module }} -DautoVersionSubmodules=false -DgenerateReleasePoms=false
           git push --tags

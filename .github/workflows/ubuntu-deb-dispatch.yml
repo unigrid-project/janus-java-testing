@@ -36,7 +36,7 @@ jobs:
       matrix:
         release: ['maven-release-tag', 'create-release', 'upload', 'update-config']
         include:
-          - release: test
+          - release: maven-release-tag
             name: Maven release tag
             inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}","skip_test": "${{ inputs.skip_test }}"}'
             check: 'Release tag'

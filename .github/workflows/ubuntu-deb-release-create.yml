@@ -58,14 +58,6 @@ jobs:
           git fetch --tags
           git checkout master
 
-      - name: Create release on Minor or Major bump
-        if: inputs.bump != 'Revision'
-        run: |
-          for tag in $(git tag --list --sort=-version:refname "v*-*" | head -n 1); do
-            echo "$tag"
-            gh release create "$tag" -d -p -t "$tag" --generate-notes
-          done
-
       - name: Set env for Revision bump
         if: inputs.bump == 'Revision'
         run: |
@@ -74,9 +66,18 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         name: Revision release
+        if: inputs.bump == 'Revision'
         with:
           name: ${{ env.tag_name }}
           tag: ${{ env.tag_name }}
           commit: ${{ env.second_latest_commit }}
           generateReleaseNotes: true
           draft: true
+
+      - name: Create release on Minor or Major bump
+        if: inputs.bump != 'Revision'
+        run: |
+          export latest_tag=$(git tag --sort=-version:refname | head -n1)
+          export version=$(echo "${latest_tag#*v}" | awk -F. '{print $1"."$2"."$3+0}')
+          gh release create "v${version}-fx" -d -p -t "v${version}-fx" --generate-notes
+          gh release create "v${version}-bootstrap" -d -p -t "v${version}-bootstrap" --generate-notes

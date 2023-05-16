@@ -87,6 +87,7 @@ jobs:
           maven-version: 3.8.6
 
       - name: Print tag_name
+        shell: bash
         run: echo "${{ env.tag_name }}"
 
       - name: Build images, configs and upload them

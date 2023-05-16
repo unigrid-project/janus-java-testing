@@ -61,7 +61,6 @@ jobs:
       - name: Create release on Minor or Major bump
         if: inputs.bump != 'Revision'
         run: |
-          $(git tag --list --sort=-version:refname "v*-*" | head -n 1)
           for tag in $(git tag --list --sort=-version:refname "v*-*" | head -n 1); do
             echo "$tag"
             gh release create "$tag" -d -p -t "$tag" --generate-notes

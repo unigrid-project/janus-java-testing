@@ -54,7 +54,7 @@ jobs:
 
           - release: upload
             name: Upload to release tag
-            inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}","skip_ubuntu": "false","skip_windows": "false","skip_macos": "false"}'
+            inputs: '{"target_module": "${{ inputs.target_module }}","bump": "${{ inputs.bump }}","skip_ubuntu": "true","skip_windows": "false","skip_macos": "false"}'
             check: 'Upload to release'
             workflow: 'upload.yml'
             repo: '${{ github.event.repository.name }}'

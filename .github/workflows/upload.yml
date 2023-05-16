@@ -116,7 +116,7 @@ jobs:
             export filename="Unigrid-${version}.dmg"
           fi
 
-          mvn -f config/pom.xml install -Dmaven.test.skip=true -Dcheckstyle.skip
+          mvn -f config/pom.xml clean install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn -f desktop/pom.xml jpackage:jpackage@installer -Djpackage.version=${version} -Dmaven.test.skip=true  -Dcheckstyle.skip
           ls desktop/target/dist/

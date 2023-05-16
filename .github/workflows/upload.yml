@@ -80,10 +80,6 @@ jobs:
         with:
           maven-version: 3.8.6
 
-      - name: Get tag name
-        shell: bash
-        run: echo "tag_name=$(git describe --tags --abbrev=0 --match "*-*" HEAD)" >> $GITHUB_ENV
-
       - name: Print tag_name
         run: echo "${{ env.tag_name }}"
 
@@ -142,7 +138,7 @@ jobs:
           export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
           mvn -f config/pom.xml install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
-          gh release upload ${{ env.tag_name }} fx/target/fx-$version.jar --clobber
+          gh release upload ${{ env.tag_name }} fx/target/fx-${version}.jar --clobber
           mkdir -p artifacts
           rsync -av ${{ env.config_matchers }} artifacts
 

@@ -36,7 +36,6 @@ env:
   GH_TOKEN: ${{ secrets.ACTION_PAT }}
   config_matchers: config/target/config*test.xml
   fx_matchers: fx/target/fx*.jar
-  tag_delimeter: '-'
 
 jobs:
   upload:
@@ -95,6 +94,9 @@ jobs:
         shell: bash
         run: |
           export version="${{ env.tag_name }}"
+          if [[ "${{ inputs.bump }}" = 'Revision' ]]; then
+            version=$(git tag --list --sort=-version:refname "v*-bootstrap" | head -n 1)
+          fi
           export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
           if [[ "${{ runner.os }}" == 'Linux' ]]; then
             export filename_matcher="unigrid_${version}*amd64.deb"
@@ -102,7 +104,7 @@ jobs:
             additional_cmd="sudo apt-get -y install alien"
             additional_cmd="$additional_cmd && alien -r $filename"
             additional_cmd="$additional_cmd && mv unigrid-${version}*x86_64.rpm unigrid-${version}-x86_64.rpm"
-            additional_cmd="$additional_cmd && gh release upload v${version}${{ env.tag_delimeter }}${{ inputs.target_module }} unigrid-${version}-x86_64.rpm --clobber"
+            additional_cmd="$additional_cmd && gh release upload v${version}-bootstrap unigrid-${version}-x86_64.rpm --clobber"
             additional_cmd="$additional_cmd && mkdir -p artifacts"
             additional_cmd="$additional_cmd && rsync -av ${{ env.config_matchers }} artifacts"
           elif [[ "${{ runner.os }}" == 'Windows' ]]; then
@@ -133,7 +135,7 @@ jobs:
             codesign -vv -d $filename
           fi
 
-          gh release upload ${{ env.tag_name }} $filename --clobber
+          gh release upload v${version}-bootstrap $filename --clobber
 
           eval $additional_cmd
 
@@ -142,10 +144,13 @@ jobs:
         shell: bash
         run: |
           export version="${{ env.tag_name }}"
+          if [[ "${{ inputs.bump }}" = 'Revision' ]]; then
+            version=$(git tag --list --sort=-version:refname "v*-fx" | head -n 1)
+          fi
           export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
           mvn -f config/pom.xml clean install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
-          gh release upload ${{ env.tag_name }} fx/target/fx-${version}.jar --clobber
+          gh release upload v${version}-fx fx/target/fx-${version}.jar --clobber
           mkdir -p artifacts
           rsync -av ${{ env.config_matchers }} artifacts
 

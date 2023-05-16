@@ -95,6 +95,9 @@ jobs:
         shell: bash
         run: |
           export version="${{ env.tag_name }}"
+          if [[ "${{ inputs.bump }}" = 'Revision' ]]; then
+            version=$(git tag --list --sort=-version:refname "v*-bootstrap" | head -n 1)
+          fi
           export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
           if [[ "${{ runner.os }}" == 'Linux' ]]; then
             export filename_matcher="unigrid_${version}*amd64.deb"
@@ -142,8 +145,11 @@ jobs:
         shell: bash
         run: |
           export version="${{ env.tag_name }}"
+          if [[ "${{ inputs.bump }}" = 'Revision' ]]; then
+            version=$(git tag --list --sort=-version:refname "v*-fx" | head -n 1)
+          fi
           export version=$(echo "${version#*v}" | awk -F. '{print $1"."$2"."$3+0}')
-          mvn -f config/pom.xml install -Dmaven.test.skip=true -Dcheckstyle.skip
+          mvn -f config/pom.xml clean install -Dmaven.test.skip=true -Dcheckstyle.skip
           mvn install -Dmaven.test.skip=true -Dcheckstyle.skip
           gh release upload ${{ env.tag_name }} fx/target/fx-${version}.jar --clobber
           mkdir -p artifacts

@@ -15,14 +15,10 @@ jobs:
 
       - name: Print Asset URL
         run: |
-          export github_url="https://api.github.com/unigrid-project/janus-java-testing/releases/"
-          export releases=$(curl -s "${github_url}" \
-          -H "Accept: application/vnd.github.v3+json")
-          export latest_release_id=$(echo "$releases" | jq -r --arg suffix "bootstrap" '.[] | select(.name | endswith($suffix)) | .id')
-          asset_urls=$(curl -s "${github_url}${latest_release_id}" \
-          -H "Accept: application/vnd.github.v3+json" \
-          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          | jq -r '.assets[].browser_download_url')
+          export tag=$(git tag --list --sort=-version:refname "v*-bootstrap" | head -n 1)
+          export github_url="https://api.github.com/repos/unigrid-project/janus-java-testing/releases/tags/${tag}"
+          export releases=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer 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" -H "X-GitHub-Api-Version: 2022-11-28" $github_url)
+          asset_urls=$(echo ${releases} | jq -r '.assets[].browser_download_url')
 
           IFS=$'\n' read -rd '' -a asset_array <<< "${asset_urls}"
           for asset_url in "${asset_array[@]}"; do

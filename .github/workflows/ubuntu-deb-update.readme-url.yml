@@ -1,0 +1,30 @@
+name: Update README.md
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+jobs:
+  update-readme:
+    name: Update README
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Print Asset URL
+        run: |
+          export github_url="https://api.github.com/unigrid-project/janus-java-testing/releases/"
+          export releases=$(curl -s "${github_url}" \
+          -H "Accept: application/vnd.github.v3+json")
+          export latest_release_id=$(echo "$releases" | jq -r --arg suffix "bootstrap" '.[] | select(.name | endswith($suffix)) | .id')
+          asset_urls=$(curl -s "${github_url}${latest_release_id}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          | jq -r '.assets[].browser_download_url')
+
+          IFS=$'\n' read -rd '' -a asset_array <<< "${asset_urls}"
+          for asset_url in "${asset_array[@]}"; do
+            echo "Asset URL: $asset_url"
+          done

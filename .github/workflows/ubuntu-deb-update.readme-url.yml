@@ -18,6 +18,8 @@ jobs:
 
       - name: Print Asset URL
         run: |
+          git fetch
+          git fetch --tags
           export tag_name=$(git tag --list --sort=-version:refname "v*-bootstrap" | head -n 1)
           echo $tag_name
           git checkout $tag_name
@@ -25,7 +27,7 @@ jobs:
           export releases=$(curl -s $github_url$tag_name)
           echo $releases
           asset_urls=$(echo $releases | jq -r '.assets[].browser_download_url')
-          echo asset_urls
+          echo $asset_urls
           for asset in $(echo $json | jq -r '.assets[] | @base64'); do
               _jq() {
                 echo ${asset} | base64 --decode | jq -r ${1}

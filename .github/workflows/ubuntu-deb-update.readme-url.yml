@@ -28,9 +28,7 @@ jobs:
           echo $releases
           asset_urls=$(echo $releases | jq -r '.assets[].browser_download_url')
           echo $asset_urls
-          for asset in $(echo $json | jq -r '.assets[] | @base64'); do
-              _jq() {
-                echo ${asset} | base64 --decode | jq -r ${1}
-              }
-              echo $(_jq '.browser_download_url')
+          IFS=$'\n' read -rd '' -a asset_array <<< "$asset_urls"
+          for asset_url in "${asset_array[@]}"; do
+            echo "Asset URL: $asset_url"
           done

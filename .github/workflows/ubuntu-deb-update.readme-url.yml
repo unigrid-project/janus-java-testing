@@ -19,7 +19,7 @@ jobs:
           echo $tag
           export github_url="https://api.github.com/repos/unigrid-project/janus-java-testing/releases/tags/${tag}"
           echo $github_url
-          export releases=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer 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" -H "X-GitHub-Api-Version: 2022-11-28" $github_url)
+          export releases=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.ACTION_PAT }}" -H "X-GitHub-Api-Version: 2022-11-28" ${github_url})
           echo releases
           echo releases
           echo releases

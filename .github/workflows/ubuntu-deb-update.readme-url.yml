@@ -17,9 +17,10 @@ jobs:
         run: |
           export tag=$(git tag --list --sort=-version:refname "v*-bootstrap" | head -n 1)
           echo $tag
-          export github_url="https://api.github.com/repos/unigrid-project/janus-java-testing/releases/tags/${tag}"
+          export github_url="https://api.github.com/repos/unigrid-project/janus-java-testing/releases/tags/"
           echo $github_url
-          export releases=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.ACTION_PAT }}" -H "X-GitHub-Api-Version: 2022-11-28" ${github_url})
+          echo ${github_url}${tag}
+          export releases=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.ACTION_PAT }}" -H "X-GitHub-Api-Version: 2022-11-28" ${github_url}${tag})
           echo releases
           echo releases
           echo releases

@@ -18,7 +18,6 @@ jobs:
 
       - name: Print Asset URL
         run: |
-          import json
           export tag_name=$(git tag --list --sort=-version:refname "v*-bootstrap" | head -n 1)
           echo $tag_name
           git checkout $tag_name

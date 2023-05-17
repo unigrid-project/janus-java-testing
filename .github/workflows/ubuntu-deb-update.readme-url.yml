@@ -22,7 +22,7 @@ jobs:
           echo $tag_name
           git checkout $tag_name
           export github_url="https://api.github.com/repos/unigrid-project/janus-java-testing/releases/tags/"
-          export releases=$(curl -s ${github_url}${tag_name})
+          export releases=$(curl -s $github_url$tag_name)
           echo $releases
           asset_urls=$(echo $releases | jq -r '.assets[].browser_download_url')
           echo asset_urls

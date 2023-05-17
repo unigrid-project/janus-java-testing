@@ -7,13 +7,13 @@ The Janus Wallet © The Unigrid Foundation
 
 Download
 -------------
-[Ubuntu (deb)](https://github.com/unigrid-project/janus-java/releases/download/v1.0.12/unigrid_1.0.12_amd64.deb)
+[Ubuntu (deb)](https://github.com/unigrid-project/janus-java/releases/download/v1.0.11/unigrid_1.0.11_amd64.deb)
 
-[Fedora (rpm)](https://github.com/unigrid-project/janus-java/releases/download/v1.0.12/unigrid-1.0.12-x86_64.rpm)
+[Fedora (rpm)](https://github.com/unigrid-project/janus-java/releases/download/v1.0.11/unigrid-1.0.11-x86_64.rpm)
 
-[MacOS X](https://github.com/unigrid-project/janus-java/releases/download/v1.0.12/Unigrid-1.0.12.dmg)
+[MacOS X](https://github.com/unigrid-project/janus-java/releases/download/v1.0.11/Unigrid-1.0.11.dmg)
 
-[Windows](https://github.com/unigrid-project/janus-java/releases/download/v1.0.12/Unigrid-1.0.12.msi)
+[Windows](https://github.com/unigrid-project/janus-java/releases/download/v1.0.11/Unigrid-1.0.11.msi)
 
 About Unigrid
 -------------

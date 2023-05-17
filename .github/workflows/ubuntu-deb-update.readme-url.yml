@@ -15,6 +15,9 @@ jobs:
     
       - name: Set up Python
         uses: actions/setup-python@v4
+    
+      - name: cat readme
+        run: cat README.md
 
       - name: Print Asset URL
         run: |
@@ -22,6 +25,8 @@ jobs:
           git fetch --tags
           export tag_name=$(git tag --list --sort=-version:refname "v*-bootstrap" | head -n 1)
           echo $tag_name
+          export version=$(echo "${tag_name#*v}" | awk -F. '{print $1"."$2"."$3+0}')
+          echo $version
           git checkout $tag_name
           export github_url="https://api.github.com/repos/unigrid-project/janus-java-testing/releases/tags/"
           export releases=$(curl -s $github_url$tag_name)
@@ -33,4 +38,12 @@ jobs:
                 echo ${asset} | base64 --decode | jq -r ${1}
               }
               echo $(_jq '.browser_download_url')
+              sed -ri 's/v[0-9\.]+/v'$version'/g' README.md
+              sed -ri 's/d-[0-9\.]+/d-'$version'/g' README.md
+              sed -ri 's/d_[0-9\.]+/d_'$version'/g' README.md
+              sed -ri 's/dmg/.dmg/g' README.md
+              sed -ri 's/msi/.msi/g' README.md
           done
+
+      - name: cat readme
+        run: cat README.md

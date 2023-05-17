@@ -16,9 +16,16 @@ jobs:
       - name: Print Asset URL
         run: |
           export tag=$(git tag --list --sort=-version:refname "v*-bootstrap" | head -n 1)
+          echo $tag
           export github_url="https://api.github.com/repos/unigrid-project/janus-java-testing/releases/tags/${tag}"
+          echo $github_url
           export releases=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer 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" -H "X-GitHub-Api-Version: 2022-11-28" $github_url)
+          echo releases
+          echo releases
+          echo releases
           asset_urls=$(echo ${releases} | jq -r '.assets[].browser_download_url')
+          echo asset_urls
+          echo asset_urls
 
           IFS=$'\n' read -rd '' -a asset_array <<< "${asset_urls}"
           for asset_url in "${asset_array[@]}"; do
